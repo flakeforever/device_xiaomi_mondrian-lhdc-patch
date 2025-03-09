@@ -1,0 +1,25 @@
+From 54a09c4eb09f649b5eb780221e0262e57bb51469 Mon Sep 17 00:00:00 2001
+From: flakeforever <113103193+flakeforever@users.noreply.github.com>
+Date: Thu, 6 Mar 2025 20:30:49 +0900
+Subject: [PATCH 1/2] Settings: bluetooth: Fix generateSummary out-of-bounds
+
+---
+ .../development/bluetooth/BaseBluetoothDialogPreference.java    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/development/bluetooth/BaseBluetoothDialogPreference.java b/src/com/android/settings/development/bluetooth/BaseBluetoothDialogPreference.java
+index b0c60a83ca5..b14c012cf0b 100644
+--- a/src/com/android/settings/development/bluetooth/BaseBluetoothDialogPreference.java
++++ b/src/com/android/settings/development/bluetooth/BaseBluetoothDialogPreference.java
+@@ -130,7 +130,7 @@ public abstract class BaseBluetoothDialogPreference extends CustomDialogPreferen
+      * Method to get summary strings by index.
+      */
+     protected String generateSummary(int index) {
+-        if (index > mSummaryStrings.size()) {
++        if (index >= mSummaryStrings.size()) {
+             Log.e(TAG, "Unable to get summary of " + index + ". Size is " + mSummaryStrings.size());
+             return null;
+         }
+-- 
+2.43.0
+

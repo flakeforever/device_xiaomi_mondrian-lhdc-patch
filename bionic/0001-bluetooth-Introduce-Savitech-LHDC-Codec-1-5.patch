@@ -1,0 +1,42 @@
+From bf513bf893abea9220da25f0f597f629db3f62ca Mon Sep 17 00:00:00 2001
+From: jimmy chen <jimmy.chen@savitech.co>
+Date: Thu, 6 Mar 2025 20:25:13 +0900
+Subject: [PATCH] bluetooth: Introduce Savitech LHDC Codec [1/5]
+
+Import Savitech LHDC Codec from https://gitlab.com/savitech-lhdc/
+---
+ libc/Android.bp | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/libc/Android.bp b/libc/Android.bp
+index 0e8c6c728..b3577bab7 100644
+--- a/libc/Android.bp
++++ b/libc/Android.bp
+@@ -1939,9 +1939,9 @@ cc_defaults {
+     name: "libstdc++_defaults",
+     static_ndk_lib: true,
+     static_libs: ["libasync_safe"],
+-    apex_available: [
+-        "//apex_available:platform",
+-    ],
++    //apex_available: [
++    //    "//apex_available:platform",
++    //],
+ 
+     static: {
+         system_shared_libs: [],
+@@ -1971,6 +1971,11 @@ cc_defaults {
+             version_script: ":libstdc++.x86_64.map",
+         },
+     },
++    apex_available: [
++        "//apex_available:platform",
++        "com.android.btservices",
++    ],
++    min_sdk_version: "33",
+ }
+ 
+ cc_library {
+-- 
+2.43.0
+

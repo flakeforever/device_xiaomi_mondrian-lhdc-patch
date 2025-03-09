@@ -1,0 +1,1890 @@
+From 0d90d5618e59a8fb3d3771d7f3e000c28f032e4e Mon Sep 17 00:00:00 2001
+From: jimmy chen <jimmy.chen@savitech.co>
+Date: Thu, 6 Mar 2025 07:34:57 -0800
+Subject: [PATCH 2/2] bluetooth: Introduce Savitech LHDC Codec [4/5]
+
+---
+ res/layout/bluetooth_audio_codec_dialog.xml   |   9 +
+ .../bluetooth_audio_sample_rate_dialog.xml    |  10 +
+ .../bluetooth_lhdc_audio_latency_dialog.xml   |  50 +++
+ .../bluetooth_lhdc_audio_lossless_dialog.xml  |  50 +++
+ ...uetooth_lhdc_audio_lossless_raw_dialog.xml |  50 +++
+ .../bluetooth_lhdc_audio_quality_dialog.xml   |  92 +++++
+ res/xml/development_settings.xml              |  34 ++
+ ...ractBluetoothA2dpPreferenceController.java |   4 +
+ .../development/BluetoothA2dpConfigStore.java |  19 +-
+ .../DevelopmentSettingsDashboardFragment.java |  14 +
+ ...ctBluetoothDialogPreferenceController.java |   2 +
+ ...itPerSampleDialogPreferenceController.java |   8 +-
+ ...ChannelModeDialogPreferenceController.java |   8 +-
+ .../BluetoothCodecDialogPreference.java       |   2 +
+ ...etoothCodecDialogPreferenceController.java |  33 +-
+ ...toothLHDCAudioLatencyDialogPreference.java |  79 ++++
+ ...udioLatencyDialogPreferenceController.java | 143 +++++++
+ ...oothLHDCAudioLosslessDialogPreference.java |  79 ++++
+ ...dioLosslessDialogPreferenceController.java | 159 ++++++++
+ ...hLHDCAudioLosslessRawDialogPreference.java |  79 ++++
+ ...LosslessRawDialogPreferenceController.java | 167 ++++++++
+ .../BluetoothLHDCQualityDialogPreference.java |  84 +++++
+ ...LHDCQualityDialogPreferenceController.java | 355 ++++++++++++++++++
+ .../BluetoothSampleRateDialogPreference.java  |   2 +
+ ...hSampleRateDialogPreferenceController.java |  35 +-
+ 25 files changed, 1555 insertions(+), 12 deletions(-)
+ create mode 100755 res/layout/bluetooth_lhdc_audio_latency_dialog.xml
+ create mode 100755 res/layout/bluetooth_lhdc_audio_lossless_dialog.xml
+ create mode 100755 res/layout/bluetooth_lhdc_audio_lossless_raw_dialog.xml
+ create mode 100755 res/layout/bluetooth_lhdc_audio_quality_dialog.xml
+ create mode 100755 src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreference.java
+ create mode 100755 src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java
+ create mode 100755 src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreference.java
+ create mode 100755 src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java
+ create mode 100755 src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreference.java
+ create mode 100755 src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java
+ create mode 100755 src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreference.java
+ create mode 100755 src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java
+
+diff --git a/res/layout/bluetooth_audio_codec_dialog.xml b/res/layout/bluetooth_audio_codec_dialog.xml
+index 3a260a655e7..d519d48595b 100644
+--- a/res/layout/bluetooth_audio_codec_dialog.xml
++++ b/res/layout/bluetooth_audio_codec_dialog.xml
+@@ -62,6 +62,15 @@
+             <include
+                 android:id="@+id/bluetooth_audio_codec_opus"
+                 layout="@layout/preference_widget_dialog_radiobutton"/>
++            <!-- Savitech LHDC - START -->
++            <include
++                android:id="@+id/bluetooth_audio_codec_lhdcv3"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <include
++                android:id="@+id/bluetooth_audio_codec_lhdcv5"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++            <!-- Savitech LHDC - END -->
+ 
+         </RadioGroup>
+ 
+diff --git a/res/layout/bluetooth_audio_sample_rate_dialog.xml b/res/layout/bluetooth_audio_sample_rate_dialog.xml
+index 03bbe48bd9b..780d0bf313c 100644
+--- a/res/layout/bluetooth_audio_sample_rate_dialog.xml
++++ b/res/layout/bluetooth_audio_sample_rate_dialog.xml
+@@ -50,6 +50,16 @@
+             <include
+                 android:id="@+id/bluetooth_audio_sample_rate_960"
+                 layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- Savitech LHDC - START -->
++            <include
++                android:id="@+id/bluetooth_audio_sample_rate_1764"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <include
++                android:id="@+id/bluetooth_audio_sample_rate_1920"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++            <!-- Savitech LHDC - END -->
+         </RadioGroup>
+ 
+         <include
+diff --git a/res/layout/bluetooth_lhdc_audio_latency_dialog.xml b/res/layout/bluetooth_lhdc_audio_latency_dialog.xml
+new file mode 100755
+index 00000000000..fb9e0ea3127
+--- /dev/null
++++ b/res/layout/bluetooth_lhdc_audio_latency_dialog.xml
+@@ -0,0 +1,50 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2023 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<ScrollView
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content">
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:orientation="vertical"
++        android:padding="8dp">
++
++        <RadioGroup
++            android:id="@+id/bluetooth_lhdc_audio_latency_radio_group"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginStart="@dimen/developer_option_dialog_margin_start">
++
++            <include
++                android:id="@+id/bluetooth_lhdc_latency_off"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <include
++                android:id="@+id/bluetooth_lhdc_latency_on"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++        </RadioGroup>
++
++        <include
++            android:id="@+id/bluetooth_audio_codec_help_info"
++            layout="@layout/preference_widget_dialog_summary"/>
++
++    </LinearLayout>
++
++</ScrollView>
++
+diff --git a/res/layout/bluetooth_lhdc_audio_lossless_dialog.xml b/res/layout/bluetooth_lhdc_audio_lossless_dialog.xml
+new file mode 100755
+index 00000000000..ea7ffc7224a
+--- /dev/null
++++ b/res/layout/bluetooth_lhdc_audio_lossless_dialog.xml
+@@ -0,0 +1,50 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2023 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<ScrollView
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content">
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:orientation="vertical"
++        android:padding="8dp">
++
++        <RadioGroup
++            android:id="@+id/bluetooth_lhdc_audio_lossless_radio_group"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginStart="@dimen/developer_option_dialog_margin_start">
++
++            <include
++                android:id="@+id/bluetooth_lhdc_lossless_off"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <include
++                android:id="@+id/bluetooth_lhdc_lossless_on"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++        </RadioGroup>
++
++        <include
++            android:id="@+id/bluetooth_audio_codec_help_info"
++            layout="@layout/preference_widget_dialog_summary"/>
++
++    </LinearLayout>
++
++</ScrollView>
++
+diff --git a/res/layout/bluetooth_lhdc_audio_lossless_raw_dialog.xml b/res/layout/bluetooth_lhdc_audio_lossless_raw_dialog.xml
+new file mode 100755
+index 00000000000..a2b1c09fdba
+--- /dev/null
++++ b/res/layout/bluetooth_lhdc_audio_lossless_raw_dialog.xml
+@@ -0,0 +1,50 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2023 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<ScrollView
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content">
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:orientation="vertical"
++        android:padding="8dp">
++
++        <RadioGroup
++            android:id="@+id/bluetooth_lhdc_audio_lossless_raw_radio_group"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginStart="@dimen/developer_option_dialog_margin_start">
++
++            <include
++                android:id="@+id/bluetooth_lhdc_lossless_raw_off"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <include
++                android:id="@+id/bluetooth_lhdc_lossless_raw_on"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++        </RadioGroup>
++
++        <include
++            android:id="@+id/bluetooth_audio_codec_help_info"
++            layout="@layout/preference_widget_dialog_summary"/>
++
++    </LinearLayout>
++
++</ScrollView>
++
+diff --git a/res/layout/bluetooth_lhdc_audio_quality_dialog.xml b/res/layout/bluetooth_lhdc_audio_quality_dialog.xml
+new file mode 100755
+index 00000000000..3d959ff980d
+--- /dev/null
++++ b/res/layout/bluetooth_lhdc_audio_quality_dialog.xml
+@@ -0,0 +1,92 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2019 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<ScrollView
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content">
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:orientation="vertical"
++        android:padding="8dp">
++
++        <RadioGroup
++            android:id="@+id/bluetooth_lhdc_audio_quality_radio_group"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginStart="@dimen/developer_option_dialog_margin_start">
++
++            <!-- 64 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_low0"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- 128 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_low1"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- 192 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_low2"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- 256 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_low3"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- 320 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_low4"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- 400 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_low"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- 500 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_mid"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- 900 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_high"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- 1000 kbps -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_high1"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <!-- ABR -->
++            <include
++                android:id="@+id/bluetooth_lhdc_audio_quality_best_effort"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++        </RadioGroup>
++
++        <include
++            android:id="@+id/bluetooth_audio_codec_help_info"
++            layout="@layout/preference_widget_dialog_summary"/>
++
++    </LinearLayout>
++
++</ScrollView>
++
+diff --git a/res/xml/development_settings.xml b/res/xml/development_settings.xml
+index 3b882d2a096..132a279f460 100644
+--- a/res/xml/development_settings.xml
++++ b/res/xml/development_settings.xml
+@@ -477,6 +477,40 @@
+             android:positiveButtonText=""
+             android:negativeButtonText="@string/dlg_ok"/>
+ 
++        <!-- Savitech LHDC - START -->
++        <com.android.settings.development.bluetooth.BluetoothLHDCQualityDialogPreference
++            android:key="bluetooth_select_a2dp_codec_lhdc_playback_quality"
++            android:title="@string/bluetooth_select_a2dp_codec_lhdc_playback_quality"
++            android:dialogTitle="@string/bluetooth_select_a2dp_codec_lhdc_playback_quality_dialog_title"
++            android:dialogLayout="@layout/bluetooth_lhdc_audio_quality_dialog"
++            android:positiveButtonText=""
++            android:negativeButtonText="@string/dlg_ok"/>
++
++        <com.android.settings.development.bluetooth.BluetoothLHDCAudioLatencyDialogPreference
++            android:key="bluetooth_enable_a2dp_codec_lhdc_latency"
++            android:title="@string/bluetooth_enable_a2dp_codec_lhdc_latency"
++            android:dialogTitle="@string/bluetooth_enable_a2dp_codec_lhdc_latency_dialog_titles"
++            android:dialogLayout="@layout/bluetooth_lhdc_audio_latency_dialog"
++            android:positiveButtonText=""
++            android:negativeButtonText="@string/dlg_ok"/>
++
++        <com.android.settings.development.bluetooth.BluetoothLHDCAudioLosslessDialogPreference
++            android:key="bluetooth_enable_a2dp_codec_lhdc_lossless"
++            android:title="@string/bluetooth_enable_a2dp_codec_lhdc_lossless"
++            android:dialogTitle="@string/bluetooth_enable_a2dp_codec_lhdc_lossless_dialog_titles"
++            android:dialogLayout="@layout/bluetooth_lhdc_audio_lossless_dialog"
++            android:positiveButtonText=""
++            android:negativeButtonText="@string/dlg_ok"/>
++
++        <com.android.settings.development.bluetooth.BluetoothLHDCAudioLosslessRawDialogPreference
++            android:key="bluetooth_enable_a2dp_codec_lhdc_lossless_raw"
++            android:title="@string/bluetooth_enable_a2dp_codec_lhdc_lossless_raw"
++            android:dialogTitle="@string/bluetooth_enable_a2dp_codec_lhdc_lossless_raw_dialog_titles"
++            android:dialogLayout="@layout/bluetooth_lhdc_audio_lossless_raw_dialog"
++            android:positiveButtonText=""
++            android:negativeButtonText="@string/dlg_ok"/>
++        <!-- Savitech LHDC - END -->
++
+         <ListPreference
+             android:key="bluetooth_max_connected_audio_devices"
+             android:title="@string/bluetooth_max_connected_audio_devices_string"
+diff --git a/src/com/android/settings/development/AbstractBluetoothA2dpPreferenceController.java b/src/com/android/settings/development/AbstractBluetoothA2dpPreferenceController.java
+index 09f3871cf78..221aeb5ccc6 100644
+--- a/src/com/android/settings/development/AbstractBluetoothA2dpPreferenceController.java
++++ b/src/com/android/settings/development/AbstractBluetoothA2dpPreferenceController.java
+@@ -113,6 +113,10 @@ public abstract class AbstractBluetoothA2dpPreferenceController extends
+ 
+     @Override
+     public void updateState(Preference preference) {
++        if (mBluetoothA2dp == null) {
++            return;
++        }
++
+         BluetoothDevice activeDevice = getA2dpActiveDevice();
+         if (activeDevice == null || getCodecConfig(activeDevice) == null || mPreference == null) {
+             return;
+diff --git a/src/com/android/settings/development/BluetoothA2dpConfigStore.java b/src/com/android/settings/development/BluetoothA2dpConfigStore.java
+index 0fef49f3124..289fc9d4473 100644
+--- a/src/com/android/settings/development/BluetoothA2dpConfigStore.java
++++ b/src/com/android/settings/development/BluetoothA2dpConfigStore.java
+@@ -66,18 +66,31 @@ public class BluetoothA2dpConfigStore {
+         mCodecSpecific1Value = codecSpecific1Value;
+     }
+ 
+-    public void setCodecSpecific2Value(int codecSpecific2Value) {
++    public void setCodecSpecific2Value(long codecSpecific2Value) {
+         mCodecSpecific2Value = codecSpecific2Value;
+     }
+ 
+-    public void setCodecSpecific3Value(int codecSpecific3Value) {
++    public void setCodecSpecific3Value(long codecSpecific3Value) {
+         mCodecSpecific3Value = codecSpecific3Value;
+     }
+ 
+-    public void setCodecSpecific4Value(int codecSpecific4Value) {
++    public void setCodecSpecific4Value(long codecSpecific4Value) {
+         mCodecSpecific4Value = codecSpecific4Value;
+     }
+ 
++    public long getCodecSpecific1Value() {
++        return mCodecSpecific1Value;
++    }
++    public long getCodecSpecific2Value() {
++        return mCodecSpecific2Value;
++    }
++    public long getCodecSpecific3Value() {
++        return mCodecSpecific3Value;
++    }
++    public long getCodecSpecific4Value() {
++        return mCodecSpecific4Value;
++    }
++
+     /** Create codec config utilizing {@link BluetoothCodecConfig.SourceCodecType} */
+     public BluetoothCodecConfig createCodecConfig() {
+         BluetoothCodecConfig.Builder builder = new BluetoothCodecConfig.Builder()
+diff --git a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+index 725f59bb410..0a3516edadd 100644
+--- a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
++++ b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+@@ -72,6 +72,10 @@ import com.android.settings.development.bluetooth.BluetoothCodecDialogPreference
+ import com.android.settings.development.bluetooth.BluetoothCodecListPreferenceController;
+ import com.android.settings.development.bluetooth.BluetoothHDAudioPreferenceController;
+ import com.android.settings.development.bluetooth.BluetoothQualityDialogPreferenceController;
++import com.android.settings.development.bluetooth.BluetoothLHDCQualityDialogPreferenceController;
++import com.android.settings.development.bluetooth.BluetoothLHDCAudioLatencyDialogPreferenceController;
++import com.android.settings.development.bluetooth.BluetoothLHDCAudioLosslessDialogPreferenceController;
++import com.android.settings.development.bluetooth.BluetoothLHDCAudioLosslessRawDialogPreferenceController;
+ import com.android.settings.development.bluetooth.BluetoothSampleRateDialogPreferenceController;
+ import com.android.settings.development.bluetooth.BluetoothStackLogPreferenceController;
+ import com.android.settings.development.graphicsdriver.GraphicsDriverEnableAngleAsSystemDriverController;
+@@ -815,6 +819,16 @@ public class DevelopmentSettingsDashboardFragment extends RestrictedDashboardFra
+                 bluetoothA2dpConfigStore));
+         controllers.add(new BluetoothQualityDialogPreferenceController(context, lifecycle,
+                 bluetoothA2dpConfigStore));
++        // Savitech LHDC -- START
++        controllers.add(new BluetoothLHDCQualityDialogPreferenceController(context, lifecycle,
++                bluetoothA2dpConfigStore));
++        controllers.add(new BluetoothLHDCAudioLatencyDialogPreferenceController(context, lifecycle,
++                bluetoothA2dpConfigStore));
++        controllers.add(new BluetoothLHDCAudioLosslessDialogPreferenceController(context, lifecycle,
++                bluetoothA2dpConfigStore));
++        controllers.add(new BluetoothLHDCAudioLosslessRawDialogPreferenceController(context, lifecycle,
++                bluetoothA2dpConfigStore));
++        // Savitech LHDC -- END
+         controllers.add(new BluetoothChannelModeDialogPreferenceController(context, lifecycle,
+                 bluetoothA2dpConfigStore));
+         controllers.add(new BluetoothHDAudioPreferenceController(context, lifecycle,
+diff --git a/src/com/android/settings/development/bluetooth/AbstractBluetoothDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/AbstractBluetoothDialogPreferenceController.java
+index 04dfc79cddd..b57066a509f 100644
+--- a/src/com/android/settings/development/bluetooth/AbstractBluetoothDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/AbstractBluetoothDialogPreferenceController.java
+@@ -41,6 +41,8 @@ public abstract class AbstractBluetoothDialogPreferenceController extends
+     private static final String TAG = "AbstractBtDlgCtr";
+ 
+     protected static final int[] CODEC_TYPES = {
++            BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5,
++            BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3,
+             BluetoothCodecConfig.SOURCE_CODEC_TYPE_OPUS,
+             BluetoothCodecConfig.SOURCE_CODEC_TYPE_LC3,
+             BluetoothCodecConfig.SOURCE_CODEC_TYPE_LDAC,
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothBitPerSampleDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothBitPerSampleDialogPreferenceController.java
+index 5cd8af28ac6..078707e74f4 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothBitPerSampleDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothBitPerSampleDialogPreferenceController.java
+@@ -61,8 +61,12 @@ public class BluetoothBitPerSampleDialogPreferenceController extends
+             case 0:
+                 final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
+                 if (currentConfig != null) {
+-                    bitsPerSampleValue = getHighestBitsPerSample(getSelectableByCodecType(
+-                            currentConfig.getCodecType()));
++                   /* Savitech patch: pick default by native decision, not always get the Highest one */
++                   if (currentConfig.getCodecType() != BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 &&
++                       currentConfig.getCodecType() != BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++                           bitsPerSampleValue = getHighestBitsPerSample(getSelectableByCodecType(
++                               currentConfig.getCodecType()));
++                   }
+                 }
+                 break;
+             case 1:
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothChannelModeDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothChannelModeDialogPreferenceController.java
+index d156abde6b4..d6ba430dbfb 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothChannelModeDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothChannelModeDialogPreferenceController.java
+@@ -61,8 +61,12 @@ public class BluetoothChannelModeDialogPreferenceController extends
+             case 0:
+                 final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
+                 if (currentConfig != null) {
+-                    channelModeValue = getHighestChannelMode(getSelectableByCodecType(
+-                            currentConfig.getCodecType()));
++                    /* Savitech patch: pick default by native decision, not always get the Highest one */
++                    if (currentConfig.getCodecType() != BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 &&
++                        currentConfig.getCodecType() != BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++                            channelModeValue = getHighestChannelMode(getSelectableByCodecType(
++                                currentConfig.getCodecType()));
++                    }
+                 }
+                 break;
+             case 1:
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothCodecDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothCodecDialogPreference.java
+index 11cfd341696..ecb4e03cba8 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothCodecDialogPreference.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothCodecDialogPreference.java
+@@ -63,6 +63,8 @@ public class BluetoothCodecDialogPreference extends BaseBluetoothDialogPreferenc
+         mRadioButtonIds.add(R.id.bluetooth_audio_codec_ldac);
+         mRadioButtonIds.add(R.id.bluetooth_audio_codec_lc3);
+         mRadioButtonIds.add(R.id.bluetooth_audio_codec_opus);
++        mRadioButtonIds.add(R.id.bluetooth_audio_codec_lhdcv3);
++        mRadioButtonIds.add(R.id.bluetooth_audio_codec_lhdcv5);
+         String[] stringArray = context.getResources().getStringArray(
+                 com.android.settingslib.R.array.bluetooth_a2dp_codec_titles);
+         for (int i = 0; i < stringArray.length; i++) {
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothCodecDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothCodecDialogPreferenceController.java
+index 6b29b8e85f3..108635c9f9a 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothCodecDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothCodecDialogPreferenceController.java
+@@ -135,6 +135,16 @@ public class BluetoothCodecDialogPreferenceController extends
+                 break;
+             default:
+                 break;
++            // Savitech LHDC -- START
++            case 8:
++                codecTypeValue = BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3;
++                codecPriorityValue = BluetoothCodecConfig.CODEC_PRIORITY_HIGHEST;
++                break;
++            case 9:
++                codecTypeValue = BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5;
++                codecPriorityValue = BluetoothCodecConfig.CODEC_PRIORITY_HIGHEST;
++                break;
++            // Savitech LHDC -- END
+         }
+         mBluetoothA2dpConfigStore.setCodecType(codecTypeValue);
+         mBluetoothA2dpConfigStore.setCodecPriority(codecPriorityValue);
+@@ -144,9 +154,18 @@ public class BluetoothCodecDialogPreferenceController extends
+         if (config == null) {
+             Log.d(TAG, "Selectable config is null. Unable to reset");
+         }
+-        mBluetoothA2dpConfigStore.setSampleRate(getHighestSampleRate(config));
+-        mBluetoothA2dpConfigStore.setBitsPerSample(getHighestBitsPerSample(config));
+-        mBluetoothA2dpConfigStore.setChannelMode(getHighestChannelMode(config));
++        // Savitech fix: use default when codec switching - START
++        if (codecTypeValue == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 ||
++            codecTypeValue == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++            mBluetoothA2dpConfigStore.setSampleRate(BluetoothCodecConfig.SAMPLE_RATE_NONE);
++            mBluetoothA2dpConfigStore.setBitsPerSample(BluetoothCodecConfig.BITS_PER_SAMPLE_NONE);
++            mBluetoothA2dpConfigStore.setChannelMode(BluetoothCodecConfig.CHANNEL_MODE_NONE);
++        } else {
++            mBluetoothA2dpConfigStore.setSampleRate(getHighestSampleRate(config));
++            mBluetoothA2dpConfigStore.setBitsPerSample(getHighestBitsPerSample(config));
++            mBluetoothA2dpConfigStore.setChannelMode(getHighestChannelMode(config));
++        }
++        // Savitech fix: use default when codec switching - END
+     }
+ 
+     @Override
+@@ -198,6 +217,14 @@ public class BluetoothCodecDialogPreferenceController extends
+             case BluetoothCodecConfig.SOURCE_CODEC_TYPE_OPUS:
+                 index = 7;
+                 break;
++            // Savitech LHDC -- START
++            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3:
++                index = 8;
++                break;
++            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5:
++                index = 9;
++                break;
++            // Savitech LHDC -- END
+             default:
+                 Log.e(TAG, "Unsupported config:" + config);
+                 break;
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreference.java
+new file mode 100755
+index 00000000000..8447c8d9d12
+--- /dev/null
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreference.java
+@@ -0,0 +1,79 @@
++/*
++ * Copyright (C) 2023 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development.bluetooth;
++
++import android.content.Context;
++import android.util.AttributeSet;
++import android.widget.RadioGroup;
++
++import com.android.settings.R;
++import android.util.Log;
++
++/**
++ * Dialog preference to set the Bluetooth A2DP config of LHDC quality
++ */
++public class BluetoothLHDCAudioLatencyDialogPreference extends BaseBluetoothDialogPreference implements
++        RadioGroup.OnCheckedChangeListener {
++
++    private static final String TAG = "BtLhdcLLPref";
++
++    public BluetoothLHDCAudioLatencyDialogPreference(Context context) {
++        super(context);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLatencyDialogPreference(Context context, AttributeSet attrs) {
++        super(context, attrs);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLatencyDialogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
++        super(context, attrs, defStyleAttr);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLatencyDialogPreference(Context context, AttributeSet attrs, int defStyleAttr,
++                                            int defStyleRes) {
++        super(context, attrs, defStyleAttr, defStyleRes);
++        initialize(context);
++    }
++
++    @Override
++    protected int getRadioButtonGroupId() {
++        return R.id.bluetooth_lhdc_audio_latency_radio_group;
++    }
++
++    @Override
++    protected int getDefaultIndex() {
++        return 0; // OFF
++    }
++
++    private void initialize(Context context) {
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_latency_off);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_latency_on);
++        String[] stringArray = context.getResources().getStringArray(
++                com.android.settingslib.R.array.bluetooth_enable_a2dp_codec_lhdc_latency_titles);
++        for (int i = 0; i < stringArray.length; i++) {
++            mRadioButtonStrings.add(stringArray[i]);
++        }
++        stringArray = context.getResources().getStringArray(
++                com.android.settingslib.R.array.bluetooth_enable_a2dp_codec_lhdc_latency_summaries);
++        for (int i = 0; i < stringArray.length; i++) {
++            mSummaryStrings.add(stringArray[i]);
++        }
++    }
++}
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java
+new file mode 100755
+index 00000000000..96438eea5a9
+--- /dev/null
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLatencyDialogPreferenceController.java
+@@ -0,0 +1,143 @@
++/*
++ * Copyright (C) 2023 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development.bluetooth;
++
++import android.bluetooth.BluetoothCodecConfig;
++import android.content.Context;
++import android.util.Log;
++
++import androidx.annotation.VisibleForTesting;
++import androidx.preference.Preference;
++import androidx.preference.PreferenceScreen;
++
++import com.android.settings.development.BluetoothA2dpConfigStore;
++import com.android.settingslib.core.lifecycle.Lifecycle;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Dialog preference controller to set the Bluetooth A2DP config of LHDC quality
++ */
++public class BluetoothLHDCAudioLatencyDialogPreferenceController extends
++        AbstractBluetoothDialogPreferenceController {
++    private static final String KEY = "bluetooth_enable_a2dp_codec_lhdc_latency";
++    private static final String TAG = "BtLhdcLowLatnecyCtr";
++    private static final int DEFAULT_MASK = 0xC000;
++    private static final int DEFAULT_TAG = 0x8000;
++    private static final int LHDC_LL_MODE = 0x1;
++    private static final int MAX_INDEX_NUM = 1;
++
++    public BluetoothLHDCAudioLatencyDialogPreferenceController(Context context, Lifecycle lifecycle,
++                                                      BluetoothA2dpConfigStore store) {
++        super(context, lifecycle, store);
++    }
++
++    @Override
++    public String getPreferenceKey() {
++        return KEY;
++    }
++
++
++    @Override
++    public void displayPreference(PreferenceScreen screen) {
++        super.displayPreference(screen);
++        ((BaseBluetoothDialogPreference) mPreference).setCallback(this);
++    }
++
++
++    @Override
++    protected void writeConfigurationValues(final int index) {
++        synchronized (mBluetoothA2dpConfigStore) {
++            long codecSpecific2Value = mBluetoothA2dpConfigStore.getCodecSpecific2Value();
++            codecSpecific2Value &= ~ DEFAULT_MASK;
++            codecSpecific2Value |= DEFAULT_TAG;
++            if (index != 0) {
++                codecSpecific2Value |= LHDC_LL_MODE;
++            } else {
++                codecSpecific2Value &= ~ LHDC_LL_MODE;
++            }
++            mBluetoothA2dpConfigStore.setCodecSpecific2Value(codecSpecific2Value);
++        }
++    }
++
++    @Override
++    protected int getCurrentIndexByConfig(BluetoothCodecConfig config) {
++        if (config == null) {
++            Log.e(TAG, "Unable to get current config index. Config is null.");
++        }
++        int index = 0;
++        long codecSpecific2Value = config.getCodecSpecific2();
++        int codecType = config.getCodecType();
++        long featureTag = 0;
++        if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 ||
++            codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++            featureTag = DEFAULT_TAG;
++        }
++        index = convertCfgToBtnIndex(featureTag, codecSpecific2Value);
++
++        // make a sync from current to storage while get
++        synchronized (mBluetoothA2dpConfigStore) {
++            mBluetoothA2dpConfigStore.setCodecSpecific2Value(codecSpecific2Value);
++        }
++        return index;
++    }
++
++    @Override
++    public List<Integer> getSelectableIndex() {
++        List<Integer> selectableIndex = new ArrayList<>();
++        for (int i = 0; i <= MAX_INDEX_NUM; i++) {
++            selectableIndex.add(i);
++        }
++        return selectableIndex;
++    }
++
++    @Override
++    public void updateState(Preference preference) {
++        super.updateState(preference);
++        final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
++        if (currentConfig != null &&
++           (currentConfig.getCodecType() == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 ||
++            currentConfig.getCodecType() == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5)) {
++            preference.setEnabled(true);
++        } else {
++            preference.setEnabled(false);
++            //preference.setSummary("");
++        }
++    }
++
++    @Override
++    public void onHDAudioEnabled(boolean enabled) {
++        mPreference.setEnabled(false);
++    }
++
++    @VisibleForTesting
++    int convertCfgToBtnIndex(long tag, long index) {
++        int ret = 0;
++        long tmp = index & DEFAULT_MASK;
++        if (tmp == tag) {
++            if ((index & LHDC_LL_MODE) != 0) {
++                ret = 1;
++            } else {
++                ret = 0;
++            }
++        } else {
++            ret = getDefaultIndex();
++        }
++        return ret;
++    }
++}
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreference.java
+new file mode 100755
+index 00000000000..4f7e2c097e3
+--- /dev/null
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreference.java
+@@ -0,0 +1,79 @@
++/*
++ * Copyright (C) 2023 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development.bluetooth;
++
++import android.content.Context;
++import android.util.AttributeSet;
++import android.widget.RadioGroup;
++
++import com.android.settings.R;
++import android.util.Log;
++
++/**
++ * Dialog preference to set the Bluetooth A2DP config of LHDC quality
++ */
++public class BluetoothLHDCAudioLosslessDialogPreference extends BaseBluetoothDialogPreference implements
++        RadioGroup.OnCheckedChangeListener {
++
++    private static final String TAG = "BtLhdcLLESSPref";
++
++    public BluetoothLHDCAudioLosslessDialogPreference(Context context) {
++        super(context);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLosslessDialogPreference(Context context, AttributeSet attrs) {
++        super(context, attrs);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLosslessDialogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
++        super(context, attrs, defStyleAttr);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLosslessDialogPreference(Context context, AttributeSet attrs, int defStyleAttr,
++                                            int defStyleRes) {
++        super(context, attrs, defStyleAttr, defStyleRes);
++        initialize(context);
++    }
++
++    @Override
++    protected int getRadioButtonGroupId() {
++        return R.id.bluetooth_lhdc_audio_lossless_radio_group;
++    }
++
++    @Override
++    protected int getDefaultIndex() {
++        return 1; // ON
++    }
++
++    private void initialize(Context context) {
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_lossless_off);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_lossless_on);
++        String[] stringArray = context.getResources().getStringArray(
++                com.android.settingslib.R.array.bluetooth_enable_a2dp_codec_lhdc_lossless_titles);
++        for (int i = 0; i < stringArray.length; i++) {
++            mRadioButtonStrings.add(stringArray[i]);
++        }
++        stringArray = context.getResources().getStringArray(
++                com.android.settingslib.R.array.bluetooth_enable_a2dp_codec_lhdc_lossless_summaries);
++        for (int i = 0; i < stringArray.length; i++) {
++            mSummaryStrings.add(stringArray[i]);
++        }
++    }
++}
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java
+new file mode 100755
+index 00000000000..8663020600d
+--- /dev/null
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessDialogPreferenceController.java
+@@ -0,0 +1,159 @@
++/*
++ * Copyright (C) 2023 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development.bluetooth;
++
++import android.bluetooth.BluetoothCodecConfig;
++import android.content.Context;
++import android.util.Log;
++
++import android.annotation.Nullable;
++import android.bluetooth.BluetoothCodecType;
++import androidx.annotation.VisibleForTesting;
++import androidx.preference.Preference;
++import androidx.preference.PreferenceScreen;
++
++import com.android.settings.development.BluetoothA2dpConfigStore;
++import com.android.settingslib.core.lifecycle.Lifecycle;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Dialog preference controller to set the Bluetooth A2DP config of LHDC quality
++ */
++public class BluetoothLHDCAudioLosslessDialogPreferenceController extends
++        AbstractBluetoothDialogPreferenceController {
++    private static final String KEY = "bluetooth_enable_a2dp_codec_lhdc_lossless";
++    private static final String TAG = "BtLhdcLosslessCtr";
++    private static final long LHDC_FEATURE_MASK = 0xFF000000;
++    private static final long LHDCV3_FEATURE_TAG = 0x4C000000;
++    private static final long LHDCV5_FEATURE_TAG = 0x5C000000;
++    private static final long LHDC_LOSSLESS_FEATURE = 0x80;
++    private static final int MAX_INDEX_NUM = 1;
++
++    public BluetoothLHDCAudioLosslessDialogPreferenceController(Context context, Lifecycle lifecycle,
++                                                      BluetoothA2dpConfigStore store) {
++        super(context, lifecycle, store);
++    }
++
++    @Override
++    public String getPreferenceKey() {
++        return KEY;
++    }
++
++
++    @Override
++    public void displayPreference(PreferenceScreen screen) {
++        super.displayPreference(screen);
++        ((BaseBluetoothDialogPreference) mPreference).setCallback(this);
++    }
++
++
++    @Override
++    protected void writeConfigurationValues(final int index) {
++        synchronized (mBluetoothA2dpConfigStore) {
++            long codecSpecific3Value = mBluetoothA2dpConfigStore.getCodecSpecific3Value();
++            final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
++            if (currentConfig != null) {
++                int codecType = currentConfig.getCodecType();
++                
++                if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3) {
++                    codecSpecific3Value &= ~ LHDC_FEATURE_MASK;
++                    codecSpecific3Value |= LHDCV3_FEATURE_TAG;
++                } else if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++                    codecSpecific3Value &= ~ LHDC_FEATURE_MASK;
++                    codecSpecific3Value |= LHDCV5_FEATURE_TAG;
++                }
++
++                if (index != 0) {
++                    codecSpecific3Value |= LHDC_LOSSLESS_FEATURE;
++                } else {
++                    codecSpecific3Value &= ~LHDC_LOSSLESS_FEATURE;
++                }
++                mBluetoothA2dpConfigStore.setCodecSpecific3Value(codecSpecific3Value);
++            }
++        }
++    }
++
++    @Override
++    protected int getCurrentIndexByConfig(BluetoothCodecConfig config) {
++        if (config == null) {
++            Log.e(TAG, "Unable to get current config index. Config is null.");
++        }
++        int index = 0;
++        long codecSpecific3Value = config.getCodecSpecific3();
++        int codecType = config.getCodecType();
++        long featureTag = 0;
++        if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3) {
++            featureTag = LHDCV3_FEATURE_TAG;
++        } else if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++            featureTag = LHDCV5_FEATURE_TAG;
++        }
++        index = convertCfgToBtnIndex(featureTag, codecSpecific3Value);
++        
++        // make a sync from current to storage while get
++        synchronized (mBluetoothA2dpConfigStore) {
++            mBluetoothA2dpConfigStore.setCodecSpecific3Value(codecSpecific3Value);
++        }
++        return index;
++    }
++
++    @Override
++    public List<Integer> getSelectableIndex() {
++        List<Integer> selectableIndex = new ArrayList<>();
++        for (int i = 0; i <= MAX_INDEX_NUM; i++) {
++            selectableIndex.add(i);
++        }
++        return selectableIndex;
++    }
++
++    @Override
++    public void updateState(Preference preference) {
++        super.updateState(preference);
++        final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
++        synchronized (mBluetoothA2dpConfigStore) {
++            if (currentConfig != null &&
++               (currentConfig.getCodecType() == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5)) {
++                preference.setEnabled(true);
++            } else {
++                preference.setEnabled(false);
++                //preference.setSummary("");
++            }
++        }
++    }
++
++    @Override
++    public void onHDAudioEnabled(boolean enabled) {
++        mPreference.setEnabled(false);
++    }
++
++    @VisibleForTesting
++    int convertCfgToBtnIndex(long tag, long index) {
++        int ret = 0;
++        long tmp = index & LHDC_FEATURE_MASK;
++        if (tmp == tag) {
++            if ((index & LHDC_LOSSLESS_FEATURE) != 0) {
++                ret = 1;
++            } else {
++                ret = 0;
++            }
++        } else {
++            ret = getDefaultIndex();
++        }
++        return ret;
++    }
++}
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreference.java
+new file mode 100755
+index 00000000000..57e2cb8ab5a
+--- /dev/null
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreference.java
+@@ -0,0 +1,79 @@
++/*
++ * Copyright (C) 2023 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development.bluetooth;
++
++import android.content.Context;
++import android.util.AttributeSet;
++import android.widget.RadioGroup;
++
++import com.android.settings.R;
++import android.util.Log;
++
++/**
++ * Dialog preference to set the Bluetooth A2DP config of LHDC quality
++ */
++public class BluetoothLHDCAudioLosslessRawDialogPreference extends BaseBluetoothDialogPreference implements
++        RadioGroup.OnCheckedChangeListener {
++
++    private static final String TAG = "BtLhdcLLESSRawPref";
++
++    public BluetoothLHDCAudioLosslessRawDialogPreference(Context context) {
++        super(context);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLosslessRawDialogPreference(Context context, AttributeSet attrs) {
++        super(context, attrs);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLosslessRawDialogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
++        super(context, attrs, defStyleAttr);
++        initialize(context);
++    }
++
++    public BluetoothLHDCAudioLosslessRawDialogPreference(Context context, AttributeSet attrs, int defStyleAttr,
++                                            int defStyleRes) {
++        super(context, attrs, defStyleAttr, defStyleRes);
++        initialize(context);
++    }
++
++    @Override
++    protected int getRadioButtonGroupId() {
++        return R.id.bluetooth_lhdc_audio_lossless_raw_radio_group;
++    }
++
++    @Override
++    protected int getDefaultIndex() {
++        return 0; // OFF
++    }
++
++    private void initialize(Context context) {
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_lossless_raw_off);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_lossless_raw_on);
++        String[] stringArray = context.getResources().getStringArray(
++                com.android.settingslib.R.array.bluetooth_enable_a2dp_codec_lhdc_lossless_raw_titles);
++        for (int i = 0; i < stringArray.length; i++) {
++            mRadioButtonStrings.add(stringArray[i]);
++        }
++        stringArray = context.getResources().getStringArray(
++                com.android.settingslib.R.array.bluetooth_enable_a2dp_codec_lhdc_lossless_raw_summaries);
++        for (int i = 0; i < stringArray.length; i++) {
++            mSummaryStrings.add(stringArray[i]);
++        }
++    }
++}
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java
+new file mode 100755
+index 00000000000..1847830600c
+--- /dev/null
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCAudioLosslessRawDialogPreferenceController.java
+@@ -0,0 +1,167 @@
++/*
++ * Copyright (C) 2023 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development.bluetooth;
++
++import android.annotation.Nullable;
++import android.bluetooth.BluetoothCodecType;
++
++import android.bluetooth.BluetoothCodecConfig;
++import android.content.Context;
++import android.util.Log;
++
++import androidx.annotation.VisibleForTesting;
++import androidx.preference.Preference;
++import androidx.preference.PreferenceScreen;
++
++import com.android.settings.development.BluetoothA2dpConfigStore;
++import com.android.settingslib.core.lifecycle.Lifecycle;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Dialog preference controller to set the Bluetooth A2DP config of LHDC quality
++ */
++public class BluetoothLHDCAudioLosslessRawDialogPreferenceController extends
++        AbstractBluetoothDialogPreferenceController {
++    private static final String KEY = "bluetooth_enable_a2dp_codec_lhdc_lossless_raw";
++    private static final String TAG = "BtLhdcLosslessRawCtr";
++    private static final long LHDC_FEATURE_MASK = 0xFF000000;
++    private static final long LHDCV3_FEATURE_TAG = 0x4C000000;
++    private static final long LHDCV5_FEATURE_TAG = 0x5C000000;
++    private static final long LHDC_LOSSLESS_FEATURE = 0x80;
++    private static final long LHDC_LOSSLESS_RAW_FEATURE = 0x100;
++    private static final int MAX_INDEX_NUM = 1;
++
++    public BluetoothLHDCAudioLosslessRawDialogPreferenceController(Context context, Lifecycle lifecycle,
++                                                      BluetoothA2dpConfigStore store) {
++        super(context, lifecycle, store);
++    }
++
++    @Override
++    public String getPreferenceKey() {
++        return KEY;
++    }
++
++
++    @Override
++    public void displayPreference(PreferenceScreen screen) {
++        super.displayPreference(screen);
++        ((BaseBluetoothDialogPreference) mPreference).setCallback(this);
++    }
++
++
++    @Override
++    protected void writeConfigurationValues(final int index) {
++        synchronized (mBluetoothA2dpConfigStore) {
++            long codecSpecific3Value = mBluetoothA2dpConfigStore.getCodecSpecific3Value();
++            final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
++
++            if (currentConfig != null) {
++                int codecType = currentConfig.getCodecType();
++                
++                if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3) {
++                    codecSpecific3Value &= ~ LHDC_FEATURE_MASK;
++                    codecSpecific3Value |= LHDCV3_FEATURE_TAG;
++                } else if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++                    codecSpecific3Value &= ~ LHDC_FEATURE_MASK;
++                    codecSpecific3Value |= LHDCV5_FEATURE_TAG;
++                }
++
++                if (index != 0) {
++                    codecSpecific3Value |= LHDC_LOSSLESS_RAW_FEATURE;
++                } else {
++                    codecSpecific3Value &= ~LHDC_LOSSLESS_RAW_FEATURE;
++                }
++                mBluetoothA2dpConfigStore.setCodecSpecific3Value(codecSpecific3Value);
++            }
++        }
++    }
++
++    @Override
++    protected int getCurrentIndexByConfig(BluetoothCodecConfig config) {
++        if (config == null) {
++            Log.e(TAG, "Unable to get current config index. Config is null.");
++        }
++        int index = 0;
++        long codecSpecific3Value = config.getCodecSpecific3();
++        int codecType = config.getCodecType();
++        long featureTag = 0;
++        if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3) {
++            featureTag = LHDCV3_FEATURE_TAG;
++        } else if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++            featureTag = LHDCV5_FEATURE_TAG;
++        }
++        index = convertCfgToBtnIndex(featureTag, codecSpecific3Value);
++
++        // make a sync from current to storage while get
++        synchronized (mBluetoothA2dpConfigStore) {
++            mBluetoothA2dpConfigStore.setCodecSpecific3Value(codecSpecific3Value);
++        }
++        return index;
++    }
++
++    @Override
++    public List<Integer> getSelectableIndex() {
++        List<Integer> selectableIndex = new ArrayList<>();
++        for (int i = 0; i <= MAX_INDEX_NUM; i++) {
++            selectableIndex.add(i);
++        }
++        return selectableIndex;
++    }
++
++    @Override
++    public void updateState(Preference preference) {
++        super.updateState(preference);
++        final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
++        synchronized (mBluetoothA2dpConfigStore) {
++            long codecSpecific3Value = mBluetoothA2dpConfigStore.getCodecSpecific3Value();
++            long tmp = codecSpecific3Value & LHDC_FEATURE_MASK;
++            long inx = codecSpecific3Value & LHDC_LOSSLESS_FEATURE;
++            if (currentConfig != null &&
++               (currentConfig.getCodecType() == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) &&
++               (tmp == LHDCV5_FEATURE_TAG) &&
++               (inx != 0)) {  // lossless raw mode requires lossless is enabled
++                preference.setEnabled(true);
++            } else {
++                preference.setEnabled(false);
++                //preference.setSummary("");
++            }
++        }
++    }
++
++    @Override
++    public void onHDAudioEnabled(boolean enabled) {
++        mPreference.setEnabled(false);
++    }
++
++    @VisibleForTesting
++    int convertCfgToBtnIndex(long tag, long index) {
++        int ret = 0;
++        long tmp = index & LHDC_FEATURE_MASK;
++        if (tmp == tag) {
++            if ((index & LHDC_LOSSLESS_RAW_FEATURE) != 0) {
++                ret = 1;
++            } else {
++                ret = 0;
++            }
++        } else {
++            ret = getDefaultIndex();
++        }
++        return ret;
++    }
++}
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreference.java
+new file mode 100755
+index 00000000000..27b0225f9e5
+--- /dev/null
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreference.java
+@@ -0,0 +1,84 @@
++/*
++ * Copyright (C) 2019 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development.bluetooth;
++
++import android.content.Context;
++import android.util.AttributeSet;
++import android.widget.RadioGroup;
++
++import com.android.settings.R;
++
++/**
++ * Dialog preference to set the Bluetooth A2DP config of LHDC quality
++ */
++public class BluetoothLHDCQualityDialogPreference extends BaseBluetoothDialogPreference implements
++        RadioGroup.OnCheckedChangeListener {
++
++    public BluetoothLHDCQualityDialogPreference(Context context) {
++        super(context);
++        initialize(context);
++    }
++
++    public BluetoothLHDCQualityDialogPreference(Context context, AttributeSet attrs) {
++        super(context, attrs);
++        initialize(context);
++    }
++
++    public BluetoothLHDCQualityDialogPreference(Context context, AttributeSet attrs, int defStyleAttr) {
++        super(context, attrs, defStyleAttr);
++        initialize(context);
++    }
++
++    public BluetoothLHDCQualityDialogPreference(Context context, AttributeSet attrs, int defStyleAttr,
++                                            int defStyleRes) {
++        super(context, attrs, defStyleAttr, defStyleRes);
++        initialize(context);
++    }
++
++    @Override
++    protected int getRadioButtonGroupId() {
++        return R.id.bluetooth_lhdc_audio_quality_radio_group;
++    }
++
++    @Override
++    protected int getDefaultIndex() {
++        return 9; // Best Effort
++    }
++
++    private void initialize(Context context) {
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_low0);  //index 0
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_low1);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_low2);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_low3);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_low4);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_low);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_mid);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_high);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_high1);
++        mRadioButtonIds.add(R.id.bluetooth_lhdc_audio_quality_best_effort);
++        String[] stringArray = context.getResources().getStringArray(
++                com.android.settingslib.R.array.bluetooth_a2dp_codec_lhdc_playback_quality_titles);
++        for (int i = 0; i < stringArray.length; i++) {
++            mRadioButtonStrings.add(stringArray[i]);
++        }
++        stringArray = context.getResources().getStringArray(
++                com.android.settingslib.R.array.bluetooth_a2dp_codec_lhdc_playback_quality_summaries);
++        for (int i = 0; i < stringArray.length; i++) {
++            mSummaryStrings.add(stringArray[i]);
++        }
++    }
++}
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java
+new file mode 100755
+index 00000000000..8ec67970db2
+--- /dev/null
++++ b/src/com/android/settings/development/bluetooth/BluetoothLHDCQualityDialogPreferenceController.java
+@@ -0,0 +1,355 @@
++/*
++ * Copyright (C) 2019 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development.bluetooth;
++
++import android.annotation.Nullable;
++import android.bluetooth.BluetoothCodecType;
++import android.bluetooth.BluetoothCodecConfig;
++import android.content.Context;
++import android.util.Log;
++
++import androidx.annotation.VisibleForTesting;
++import androidx.preference.Preference;
++import androidx.preference.PreferenceScreen;
++
++import com.android.settings.development.BluetoothA2dpConfigStore;
++import com.android.settingslib.core.lifecycle.Lifecycle;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Dialog preference controller to set the Bluetooth A2DP config of LHDC quality
++ */
++public class BluetoothLHDCQualityDialogPreferenceController extends
++        AbstractBluetoothDialogPreferenceController {
++
++    // In standard, low0(64 kbps) is available
++    private static final int index_adjust_offset = 0;
++    // In case of low0 removed, shift the rest indices
++    //private static final int index_adjust_offset = 1;
++    //private int codecType = 0;
++    private static final String KEY = "bluetooth_select_a2dp_codec_lhdc_playback_quality";
++    private static final String TAG = "BtLhdcAudioQualityCtr";
++    private static final int DEFAULT_MASK = 0xC000;
++    private static final int DEFAULT_TAG = 0x8000;
++    private static final int VALUE_MASK = 0xFF;
++    //DEFAULT_MAX_INDEX: sync with BluetoothLHDCQualityDialogPreference.java::getDefaultIndex()
++    private static final int DEFAULT_MAX_INDEX = (9 - index_adjust_offset);
++    private static final int INDEX_ABR = DEFAULT_MAX_INDEX;
++    private static final int INDEX_HIGH1 = (8 - index_adjust_offset);  //1000kbps
++    private static final int INDEX_HIGH = (7 - index_adjust_offset);   //900kbps
++    private static final int INDEX_MID = (6 - index_adjust_offset);    //500kbps
++    private static final int INDEX_LOW = (5 - index_adjust_offset);    //400kbps
++    private static final int INDEX_LOW4 = (4 - index_adjust_offset);   //320kbps
++    private static final int INDEX_LOW3 = (3 - index_adjust_offset);   //256kbps
++    private static final int INDEX_LOW2 = (2 - index_adjust_offset);   //192kbps
++    private static final int INDEX_LOW1 = (1 - index_adjust_offset);   //128(V3/V4), 160(V5)kbps
++    private static final int INDEX_LOW0 = (0 - index_adjust_offset);   //64kbps
++
++    private static final int MAX_BITRATE_MASK = 0xF00;
++    private static final int MIN_BITRATE_MASK = 0xF0000;
++    private static final int LHDCV3_CAP_V4_LLAC_MASK = 0xF00000;
++
++    private static final int LHDCV3_MAX_BITRATE_INX_MID = 0x100;    //400kbps
++    private static final int LHDCV3_MAX_BITRATE_INX_LOW = 0x200;    //500kbps
++    private static final int LHDCV3_MAX_BITRATE_INX_HIGH = 0x000;   //900kbps
++
++    private static final int LHDCV3_MIN_BITRATE_ON = 0x10000;
++
++    private static final int LHDCV3_CAP_V4_LLAC = 0x300000;
++    private static final int LHDCV3_CAP_V4_ONLY = 0x200000;
++    private static final int LHDCV3_CAP_LLAC_ONLY = 0x100000;
++    private static final int LHDCV3_CAP_V3_ONLY = 0x000000;
++
++    private static final int LHDCV5_MAX_BITRATE_INX_HIGH = 0x300;
++    private static final int LHDCV5_MAX_BITRATE_INX_MID  = 0x200;
++    private static final int LHDCV5_MAX_BITRATE_INX_LOW  = 0x100;
++
++    private static final int LHDCV5_MIN_BITRATE_INX_LOW  = 0xC0000;
++    private static final int LHDCV5_MIN_BITRATE_INX_LOW3 = 0x80000;
++    private static final int LHDCV5_MIN_BITRATE_INX_LOW1 = 0x40000;
++
++    public BluetoothLHDCQualityDialogPreferenceController(Context context, Lifecycle lifecycle,
++                                                      BluetoothA2dpConfigStore store) {
++        super(context, lifecycle, store);
++    }
++
++    @Override
++    public String getPreferenceKey() {
++        return KEY;
++    }
++
++    @Override
++    public void displayPreference(PreferenceScreen screen) {
++        super.displayPreference(screen);
++        ((BaseBluetoothDialogPreference) mPreference).setCallback(this);
++    }
++
++    @Override
++    protected void writeConfigurationValues(final int index) {
++        synchronized (mBluetoothA2dpConfigStore) {
++            long codecSpecific1Value = mBluetoothA2dpConfigStore.getCodecSpecific1Value();
++            
++            final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
++
++            // LHDCV3/V5 selectable items are filtered by product rules
++            if (currentConfig != null) {
++                int codecType = currentConfig.getCodecType();
++                
++                if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 ||
++                    codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++                    codecSpecific1Value &= ~ DEFAULT_MASK;
++                    codecSpecific1Value &= ~ VALUE_MASK;
++                    codecSpecific1Value |= DEFAULT_TAG;
++                    if (index <= DEFAULT_MAX_INDEX) {
++                        codecSpecific1Value |= (index + index_adjust_offset);
++                    } else {
++                        codecSpecific1Value |= DEFAULT_MAX_INDEX;
++                    }
++                    mBluetoothA2dpConfigStore.setCodecSpecific1Value(codecSpecific1Value);
++                }
++            }
++        }
++    }
++
++    @Override
++    protected int getCurrentIndexByConfig(BluetoothCodecConfig config) {
++        if (config == null) {
++            Log.e(TAG, "Unable to get current config index. Config is null.");
++        }
++        int index = 0;
++        long codecSpecific1Value = config.getCodecSpecific1();
++        int codecType = config.getCodecType();
++        long featureTag = 0;
++        if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 ||
++            codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++            featureTag = DEFAULT_TAG;
++        }
++        index = convertCfgToBtnIndex(featureTag, codecSpecific1Value);
++
++        // make a sync from current to storage while get
++        synchronized (mBluetoothA2dpConfigStore) {
++            mBluetoothA2dpConfigStore.setCodecSpecific1Value(codecSpecific1Value);
++        }
++        return index;
++    }
++
++    @Override
++    public List<Integer> getSelectableIndex() {
++        List<Integer> selectableIndex = new ArrayList<>();
++        final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
++
++        // LHDCV3/V5 selectable items are filtered by product rules
++        if (currentConfig != null) {
++            int codecType = currentConfig.getCodecType();
++            long codecSpecific1Value = currentConfig.getCodecSpecific1();
++            int sampleRateValue = currentConfig.getSampleRate();
++
++            for (int i = 0; i <= DEFAULT_MAX_INDEX; i++) {
++                // LHDCV3/V4:
++                if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3) {
++                    // LHDCV3/V4 does not support 1000kbps
++                    if (i == INDEX_HIGH1) {
++                        continue;
++                    }
++
++                    // UI policy 1: filter bitrate index by LHDCV3/V4 capabilities: V4 and LLAC
++                    // cap: V4+LLAC
++                    if ((codecSpecific1Value & LHDCV3_CAP_V4_LLAC_MASK) == LHDCV3_CAP_V4_LLAC) {
++                        // min birate ON: not allow 64kbps
++                        if ((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV3_MIN_BITRATE_ON) {
++                            if (INDEX_LOW0 ==0 && i == INDEX_LOW0) {
++                                continue;
++                            }
++                        }
++                        if (sampleRateValue == BluetoothCodecConfig.SAMPLE_RATE_96000) {
++                            if ((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV3_MIN_BITRATE_ON) {
++                                // min birate ON: at least available from MID but no ABR
++                                if (i < INDEX_MID || i == INDEX_ABR) {
++                                    continue;
++                                }
++                            } else {
++                                // min birate OFF: at least available from LOW but no ABR
++                                if (i < INDEX_LOW || i == INDEX_ABR) {
++                                    continue;
++                                }
++                            }
++                        }
++                    }
++                    // cap: V4
++                    if ((codecSpecific1Value & LHDCV3_CAP_V4_LLAC_MASK) == LHDCV3_CAP_V4_ONLY) {
++                        if (sampleRateValue == BluetoothCodecConfig.SAMPLE_RATE_96000) {
++                            if ((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV3_MIN_BITRATE_ON) {
++                                // min birate ON: at least available from MID but no ABR
++                                if (i < INDEX_MID || i == INDEX_ABR) {
++                                    continue;
++                                }
++                            } else {
++                                // min birate OFF: at least available from LOW but no ABR
++                                if (i < INDEX_LOW || i == INDEX_ABR) {
++                                    continue;
++                                }
++                            }
++                        } else {
++                            if ((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV3_MIN_BITRATE_ON) {
++                                // min birate ON: at least available from LOW4
++                                if (i < INDEX_LOW4) {
++                                    continue;
++                                }
++                            }
++                        }
++                        // min bitrate OFF: at least available from LOW1
++                        if (i < INDEX_LOW1) {
++                            continue;
++                        }
++                    }
++                    // cap: LLAC
++                    if ((codecSpecific1Value & LHDCV3_CAP_V4_LLAC_MASK) == LHDCV3_CAP_LLAC_ONLY) {
++                        // min birate ON: not allow 64kbps
++                        if ((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV3_MIN_BITRATE_ON) {
++                            if (INDEX_LOW0 ==0 && i == INDEX_LOW0) {
++                                continue;
++                            }
++                        }
++                        // at most available to LOW but include ABR
++                        if (i > INDEX_LOW && i != INDEX_ABR) {
++                            continue;
++                        }
++                    }
++                    // cap: none(V3 only)
++                    if ((codecSpecific1Value & LHDCV3_CAP_V4_LLAC_MASK) == LHDCV3_CAP_V3_ONLY) {
++                        if (sampleRateValue == BluetoothCodecConfig.SAMPLE_RATE_96000) {
++                            if ((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV3_MIN_BITRATE_ON) {
++                                // min birate ON: at least available from LOW
++                                if (i < INDEX_LOW) {
++                                    continue;
++                                }
++                            }
++                        } else {
++                            if ((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV3_MIN_BITRATE_ON) {
++                                // min birate ON: at least available from LOW4
++                                if (i < INDEX_LOW4) {
++                                    continue;
++                                }
++                            }
++                        }
++                        // min bitrate OFF: at least available from LOW1
++                        if (i < INDEX_LOW1) {
++                            continue;
++                        }
++                    }
++
++                    // UI policy 2: filter bitrate index by max bitrate
++                    if (((codecSpecific1Value & MAX_BITRATE_MASK) == LHDCV3_MAX_BITRATE_INX_LOW) &&
++                        (i > INDEX_LOW && i < DEFAULT_MAX_INDEX)) {
++                        continue;
++                    }
++                    if (((codecSpecific1Value & MAX_BITRATE_MASK) == LHDCV3_MAX_BITRATE_INX_MID) && 
++                        (i > INDEX_MID && i < DEFAULT_MAX_INDEX)) {
++                        continue;
++                    }
++                }
++
++                // LHDCV5:
++                if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++                    // UI policy 1: filter bitrate index according to max/min bitrate
++                    // According to peer max bitrate
++                    if (((codecSpecific1Value & MAX_BITRATE_MASK) == LHDCV5_MAX_BITRATE_INX_LOW) &&
++                        (i > INDEX_LOW && i < DEFAULT_MAX_INDEX)) {
++                        continue;
++                    }
++                    if (((codecSpecific1Value & MAX_BITRATE_MASK) == LHDCV5_MAX_BITRATE_INX_MID) && 
++                        (i > INDEX_MID && i < DEFAULT_MAX_INDEX)) {
++                        continue;
++                    }
++                    if (((codecSpecific1Value & MAX_BITRATE_MASK) == LHDCV5_MAX_BITRATE_INX_HIGH) && 
++                        (i > INDEX_HIGH && i < DEFAULT_MAX_INDEX)) {
++                        continue;
++                    }
++
++                    // According to peer min bitrate
++                    if (((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV5_MIN_BITRATE_INX_LOW) &&
++                        (i < INDEX_LOW)) {
++                        continue;
++                    }
++                    if (((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV5_MIN_BITRATE_INX_LOW3) && 
++                        (i < INDEX_LOW3)) {
++                        continue;
++                    }
++                    if (((codecSpecific1Value & MIN_BITRATE_MASK) == LHDCV5_MIN_BITRATE_INX_LOW1) && 
++                        (i < INDEX_LOW1)) {
++                        continue;
++                    }
++
++                    // UI rule 2: filter bitrate index according to sample rate
++                    if (sampleRateValue == BluetoothCodecConfig.SAMPLE_RATE_96000 ||
++                        sampleRateValue == BluetoothCodecConfig.SAMPLE_RATE_192000) {
++                        if (i < INDEX_LOW3) {
++                            continue;
++                        }
++                    }
++                    if (sampleRateValue == BluetoothCodecConfig.SAMPLE_RATE_44100 ||
++                        sampleRateValue == BluetoothCodecConfig.SAMPLE_RATE_48000) {
++                        if (i > INDEX_HIGH && i < DEFAULT_MAX_INDEX) {
++                            continue;
++                        }
++                    }
++                }
++                selectableIndex.add(i);
++            }
++        }
++        return selectableIndex;
++    }
++
++    @Override
++    public void updateState(Preference preference) {
++        super.updateState(preference);
++        // Enable this preference menu when current codec type is LHDC V3/V5. For other cases, disable it.
++        final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
++        if (currentConfig != null &&
++           (currentConfig.getCodecType() == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 ||
++            currentConfig.getCodecType() == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5)) {
++            preference.setEnabled(true);
++        } else {
++            preference.setEnabled(false);
++            //preference.setSummary("");
++        }
++    }
++
++    @Override
++    public void onHDAudioEnabled(boolean enabled) {
++        mPreference.setEnabled(false);
++    }
++
++    @VisibleForTesting
++    int convertCfgToBtnIndex(long tag, long index) {
++        int ret = 0;
++        long tmp = index & DEFAULT_MASK;
++        if (tmp == tag) {
++            index &= VALUE_MASK;
++        } else {
++            index = getDefaultIndex();
++        }
++        ret = (int)(index - index_adjust_offset);
++        if(ret < 0)
++        {
++            ret = 0;
++        }
++        return ret;
++    }
++}
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreference.java b/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreference.java
+index 71eda79003e..d38641ebf0e 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreference.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreference.java
+@@ -61,6 +61,8 @@ public class BluetoothSampleRateDialogPreference extends BaseBluetoothDialogPref
+         mRadioButtonIds.add(R.id.bluetooth_audio_sample_rate_480);
+         mRadioButtonIds.add(R.id.bluetooth_audio_sample_rate_882);
+         mRadioButtonIds.add(R.id.bluetooth_audio_sample_rate_960);
++        mRadioButtonIds.add(R.id.bluetooth_audio_sample_rate_1764);
++        mRadioButtonIds.add(R.id.bluetooth_audio_sample_rate_1920);
+         String[] stringArray = context.getResources().getStringArray(
+                 com.android.settingslib.R.array.bluetooth_a2dp_codec_sample_rate_titles);
+         for (int i = 0; i < stringArray.length; i++) {
+diff --git a/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreferenceController.java b/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreferenceController.java
+index 9e4b99ef88c..05c0be8a3cb 100644
+--- a/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreferenceController.java
++++ b/src/com/android/settings/development/bluetooth/BluetoothSampleRateDialogPreferenceController.java
+@@ -38,6 +38,10 @@ public class BluetoothSampleRateDialogPreferenceController extends
+     private static final String KEY = "bluetooth_sample_rate_settings";
+     private static final String TAG = "BtSampleRateCtr";
+ 
++    // LHDCV3/V4
++    private static final int LHDCV3_CAP_V4_LLAC_MASK = 0xF00000;
++    private static final int LHDCV3_CAP_LLAC_ONLY = 0x100000;
++
+     public BluetoothSampleRateDialogPreferenceController(Context context, Lifecycle lifecycle,
+                                                          BluetoothA2dpConfigStore store) {
+         super(context, lifecycle, store);
+@@ -61,8 +65,12 @@ public class BluetoothSampleRateDialogPreferenceController extends
+             case 0:
+                 final BluetoothCodecConfig currentConfig = getCurrentCodecConfig();
+                 if (currentConfig != null) {
+-                    sampleRateValue = getHighestSampleRate(getSelectableByCodecType(
+-                            currentConfig.getCodecType()));
++                    /* Savitech LHDC patch: use default by LHDC native when selecting system default */
++                    if (currentConfig.getCodecType() != BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3 &&
++                        currentConfig.getCodecType() != BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5) {
++                            sampleRateValue = getHighestSampleRate(getSelectableByCodecType(
++                                currentConfig.getCodecType()));
++                    }
+                 }
+                 break;
+             case 1:
+@@ -77,6 +85,12 @@ public class BluetoothSampleRateDialogPreferenceController extends
+             case 4:
+                 sampleRateValue = BluetoothCodecConfig.SAMPLE_RATE_96000;
+                 break;
++            case 5:
++                sampleRateValue = BluetoothCodecConfig.SAMPLE_RATE_176400;
++                break;
++            case 6:
++                sampleRateValue = BluetoothCodecConfig.SAMPLE_RATE_192000;
++                break;
+             default:
+                 break;
+         }
+@@ -99,8 +113,19 @@ public class BluetoothSampleRateDialogPreferenceController extends
+         if (currentConfig != null) {
+             final int configs =
+                     getSelectableByCodecType(currentConfig.getCodecType()).getSampleRate();
++            int codecType = currentConfig.getCodecType();
++            long codecSpecific1Value = currentConfig.getCodecSpecific1();
+             for (int sampleRate : SAMPLE_RATES) {
+                 if ((configs & sampleRate) != 0) {
++                    // (UI optional) LHDCV3/V4: LLAC-only does not support 96KHz
++                    if (codecType == BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3) {
++                        if ((codecSpecific1Value & LHDCV3_CAP_V4_LLAC_MASK) == LHDCV3_CAP_LLAC_ONLY) {
++                            if (sampleRate == BluetoothCodecConfig.SAMPLE_RATE_96000 ||
++                                sampleRate == BluetoothCodecConfig.SAMPLE_RATE_192000) {
++                                continue;
++                            }
++                        }
++                    }
+                     selectableIndex.add(convertCfgToBtnIndex(sampleRate));
+                 }
+             }
+@@ -124,6 +149,12 @@ public class BluetoothSampleRateDialogPreferenceController extends
+             case BluetoothCodecConfig.SAMPLE_RATE_96000:
+                 index = 4;
+                 break;
++            case BluetoothCodecConfig.SAMPLE_RATE_176400:
++                index = 5;
++                break;
++            case BluetoothCodecConfig.SAMPLE_RATE_192000:
++                index = 6;
++                break;
+             default:
+                 Log.e(TAG, "Unsupported config:" + config);
+                 break;
+-- 
+2.43.0
+

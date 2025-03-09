@@ -1,0 +1,26 @@
+From e7d5dabd7c1ff224cc995575a3b0c9b57f63e1ea Mon Sep 17 00:00:00 2001
+From: jimmy chen <jimmy.chen@savitech.co>
+Date: Mon, 3 Mar 2025 19:43:24 +0800
+Subject: [PATCH] bluetooth: Introduce Savitech LHDC Codec [3/5]
+
+Import Savitech LHDC Codec from https://gitlab.com/savitech-lhdc/
+---
+ bluetooth/audio/utils/aidl_session/BluetoothAudioCodecs.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/bluetooth/audio/utils/aidl_session/BluetoothAudioCodecs.cpp b/bluetooth/audio/utils/aidl_session/BluetoothAudioCodecs.cpp
+index 3feb44c9e3..58d2efa12a 100644
+--- a/bluetooth/audio/utils/aidl_session/BluetoothAudioCodecs.cpp
++++ b/bluetooth/audio/utils/aidl_session/BluetoothAudioCodecs.cpp
+@@ -43,7 +43,7 @@ namespace bluetooth {
+ namespace audio {
+ 
+ static const PcmCapabilities kDefaultSoftwarePcmCapabilities = {
+-    .sampleRateHz = {8000, 16000, 24000, 32000, 44100, 48000, 88200, 96000},
++    .sampleRateHz = {8000, 16000, 24000, 32000, 44100, 48000, 88200, 96000, 192000},
+     .channelMode = {ChannelMode::MONO, ChannelMode::STEREO},
+     .bitsPerSample = {16, 24, 32},
+     .dataIntervalUs = {},
+-- 
+2.43.0
+
