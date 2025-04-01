@@ -1,37 +1,39 @@
-From 64cedacab2a0976e516d6fadb05d1e9caefc2492 Mon Sep 17 00:00:00 2001
+From 725184441f1be32dae32ef4e629359a0db45d772 Mon Sep 17 00:00:00 2001
 From: jimmy chen <jimmy.chen@savitech.co>
-Date: Fri, 7 Mar 2025 01:03:13 +0800
+Date: Tue, 1 Apr 2025 06:51:14 -0700
 Subject: [PATCH] bluetooth: Introduce Savitech LHDC Codec [5/5]
 
 Import Savitech LHDC Codec from https://gitlab.com/savitech-lhdc/
+
+Co-authored-by: flakeforever <113103193+flakeforever@users.noreply.github.com>
 ---
  android/app/res/values/config.xml             |    3 +
- .../bluetooth/a2dp/A2dpCodecConfig.java       |   47 +-
+ .../bluetooth/a2dp/A2dpCodecConfig.java       |   46 +-
  .../bluetooth/a2dp/A2dpStateMachine.java      |   12 +
  apex/Android.bp                               |   28 +-
- framework/api/current.txt                     |    2 +
+ framework/api/current.txt                     |    3 +
  framework/api/lint-baseline.txt               |    5 +
- framework/api/module-lib-lint-baseline.txt    |    6 +
+ framework/api/module-lib-lint-baseline.txt    |    4 +
  framework/api/system-lint-baseline.txt        |    5 +
  .../bluetooth/BluetoothCodecConfig.java       |   44 +-
- .../android/bluetooth/BluetoothCodecType.java |   16 +
- .../aidl/a2dp_encoding_aidl.cc                |    6 +
- .../aidl/codec_status_aidl.cc                 |    1 +
- system/btif/co/bta_av_co.cc                   |   19 +-
+ .../android/bluetooth/BluetoothCodecType.java |    8 +-
+ .../aidl/a2dp/a2dp_encoding_aidl.cc           |    6 +
+ .../aidl/a2dp/codec_status_aidl.cc            |    1 +
+ system/btif/co/bta_av_co.cc                   |   17 +-
  system/btif/src/btif_a2dp_source.cc           |   19 +-
- system/include/hardware/bt_av.h               |   17 +-
+ system/include/hardware/bt_av.h               |   16 +
  system/internal_include/bt_target.h           |    3 +-
  system/stack/Android.bp                       |    9 +
- system/stack/a2dp/a2dp_codec_config.cc        |   23 +-
- system/stack/a2dp/a2dp_vendor.cc              |  234 +-
- system/stack/a2dp/a2dp_vendor_lhdcv3.cc       | 2483 +++++++++++++
- system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc   | 2087 +++++++++++
- .../stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc  |  554 +++
+ system/stack/a2dp/a2dp_codec_config.cc        |   43 +-
+ system/stack/a2dp/a2dp_vendor.cc              |  189 +
+ system/stack/a2dp/a2dp_vendor_lhdcv3.cc       | 2482 +++++++++++++
+ system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc   | 2085 +++++++++++
+ .../stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc  |  553 +++
  .../stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc  | 1054 ++++++
- system/stack/a2dp/a2dp_vendor_lhdcv5.cc       | 3149 +++++++++++++++++
- .../stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc  |  617 ++++
- .../stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc  | 1309 +++++++
- system/stack/include/a2dp_constants.h         |    2 +
+ system/stack/a2dp/a2dp_vendor_lhdcv5.cc       | 3148 +++++++++++++++++
+ .../stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc  |  616 ++++
+ .../stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc  | 1307 +++++++
+ system/stack/include/a2dp_constants.h         |    5 +
  .../include/a2dp_vendor_lhdc_constants.h      |  308 ++
  system/stack/include/a2dp_vendor_lhdcv3.h     |  324 ++
  system/stack/include/a2dp_vendor_lhdcv3_dec.h |  192 +
@@ -41,23 +43,23 @@ Import Savitech LHDC Codec from https://gitlab.com/savitech-lhdc/
  .../include/a2dp_vendor_lhdcv5_constants.h    |  258 ++
  .../include/a2dp_vendor_lhdcv5_decoder.h      |   58 +
  .../include/a2dp_vendor_lhdcv5_encoder.h      |   66 +
- 36 files changed, 13373 insertions(+), 14 deletions(-)
- create mode 100755 system/stack/a2dp/a2dp_vendor_lhdcv3.cc
- create mode 100755 system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
- create mode 100755 system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
- create mode 100755 system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
- create mode 100755 system/stack/a2dp/a2dp_vendor_lhdcv5.cc
- create mode 100755 system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
- create mode 100755 system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
- create mode 100755 system/stack/include/a2dp_vendor_lhdc_constants.h
- create mode 100755 system/stack/include/a2dp_vendor_lhdcv3.h
- create mode 100755 system/stack/include/a2dp_vendor_lhdcv3_dec.h
- create mode 100755 system/stack/include/a2dp_vendor_lhdcv3_decoder.h
- create mode 100755 system/stack/include/a2dp_vendor_lhdcv3_encoder.h
- create mode 100755 system/stack/include/a2dp_vendor_lhdcv5.h
- create mode 100755 system/stack/include/a2dp_vendor_lhdcv5_constants.h
- create mode 100755 system/stack/include/a2dp_vendor_lhdcv5_decoder.h
- create mode 100755 system/stack/include/a2dp_vendor_lhdcv5_encoder.h
+ 36 files changed, 13331 insertions(+), 13 deletions(-)
+ create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv3.cc
+ create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
+ create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
+ create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
+ create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv5.cc
+ create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
+ create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
+ create mode 100644 system/stack/include/a2dp_vendor_lhdc_constants.h
+ create mode 100644 system/stack/include/a2dp_vendor_lhdcv3.h
+ create mode 100644 system/stack/include/a2dp_vendor_lhdcv3_dec.h
+ create mode 100644 system/stack/include/a2dp_vendor_lhdcv3_decoder.h
+ create mode 100644 system/stack/include/a2dp_vendor_lhdcv3_encoder.h
+ create mode 100644 system/stack/include/a2dp_vendor_lhdcv5.h
+ create mode 100644 system/stack/include/a2dp_vendor_lhdcv5_constants.h
+ create mode 100644 system/stack/include/a2dp_vendor_lhdcv5_decoder.h
+ create mode 100644 system/stack/include/a2dp_vendor_lhdcv5_encoder.h
 
 diff --git a/android/app/res/values/config.xml b/android/app/res/values/config.xml
 index 7418000e8e..5e7bdfba35 100644
@@ -74,7 +76,7 @@ index 7418000e8e..5e7bdfba35 100644
      <!-- For enabling the AVRCP Target Cover Artowrk feature-->
      <bool name="avrcp_target_enable_cover_art">true</bool>
 diff --git a/android/app/src/com/android/bluetooth/a2dp/A2dpCodecConfig.java b/android/app/src/com/android/bluetooth/a2dp/A2dpCodecConfig.java
-index 39efb93496..865d35793c 100644
+index 39efb93496..32586c6bc6 100644
 --- a/android/app/src/com/android/bluetooth/a2dp/A2dpCodecConfig.java
 +++ b/android/app/src/com/android/bluetooth/a2dp/A2dpCodecConfig.java
 @@ -54,7 +54,12 @@ class A2dpCodecConfig {
@@ -91,7 +93,7 @@ index 39efb93496..865d35793c 100644
      private BluetoothCodecConfig[] mCodecConfigOffloading = new BluetoothCodecConfig[0];
  
      A2dpCodecConfig(Context context, A2dpNativeInterface a2dpNativeInterface) {
-@@ -262,9 +267,34 @@ class A2dpCodecConfig {
+@@ -262,9 +267,33 @@ class A2dpCodecConfig {
                  && (value < BluetoothCodecConfig.CODEC_PRIORITY_HIGHEST)) {
              mA2dpSourceCodecPriorityOpus = value;
          }
@@ -107,7 +109,7 @@ index 39efb93496..865d35793c 100644
 +                < BluetoothCodecConfig.CODEC_PRIORITY_HIGHEST)) {
 +            mA2dpSourceCodecPriorityLhdcV3 = value;
 +        }
-+
+ 
 +        try {
 +            value = SystemProperties.getInt(
 +                "bluetooth.a2dp.source.lhdcv5_priority.config",
@@ -120,14 +122,13 @@ index 39efb93496..865d35793c 100644
 +            mA2dpSourceCodecPriorityLhdcV5 = value;
 +        }
 +        // Savitech LHDC -- END
- 
          BluetoothCodecConfig codecConfig;
 -        BluetoothCodecConfig[] codecConfigArray = new BluetoothCodecConfig[6];
 +        BluetoothCodecConfig[] codecConfigArray = new BluetoothCodecConfig[8];  // Savitech LHDC patch
          codecConfig =
                  new BluetoothCodecConfig.Builder()
                          .setCodecType(BluetoothCodecConfig.SOURCE_CODEC_TYPE_SBC)
-@@ -301,7 +331,18 @@ class A2dpCodecConfig {
+@@ -301,7 +330,18 @@ class A2dpCodecConfig {
                          .setCodecPriority(mA2dpSourceCodecPriorityOpus)
                          .build();
          codecConfigArray[5] = codecConfig;
@@ -148,10 +149,10 @@ index 39efb93496..865d35793c 100644
      }
  
 diff --git a/android/app/src/com/android/bluetooth/a2dp/A2dpStateMachine.java b/android/app/src/com/android/bluetooth/a2dp/A2dpStateMachine.java
-index b53ee4c505..bdc5cdb965 100644
+index f0b5a028ac..7d3b9a192e 100644
 --- a/android/app/src/com/android/bluetooth/a2dp/A2dpStateMachine.java
 +++ b/android/app/src/com/android/bluetooth/a2dp/A2dpStateMachine.java
-@@ -768,6 +768,18 @@ final class A2dpStateMachine extends StateMachine {
+@@ -706,6 +706,18 @@ final class A2dpStateMachine extends StateMachine {
                      && (prevCodecConfig.getCodecSpecific1()
                              != newCodecConfig.getCodecSpecific1())) {
                  update = true;
@@ -213,10 +214,10 @@ index 52b9631fb4..a6775ca92d 100644
      bootclasspath_fragments: ["com.android.btservices-bootclasspath-fragment"],
      systemserverclasspath_fragments: ["com.android.btservices-systemserverclasspath-fragment"],
 diff --git a/framework/api/current.txt b/framework/api/current.txt
-index 29d8ef989d..61853a3970 100644
+index 8ee8e08f2b..0a2471f3b5 100644
 --- a/framework/api/current.txt
 +++ b/framework/api/current.txt
-@@ -459,6 +459,8 @@ package android.bluetooth {
+@@ -460,6 +460,8 @@ package android.bluetooth {
      field @Deprecated public static final int SOURCE_CODEC_TYPE_INVALID = 1000000; // 0xf4240
      field @Deprecated public static final int SOURCE_CODEC_TYPE_LC3 = 5; // 0x5
      field @Deprecated public static final int SOURCE_CODEC_TYPE_LDAC = 4; // 0x4
@@ -225,8 +226,16 @@ index 29d8ef989d..61853a3970 100644
      field @Deprecated public static final int SOURCE_CODEC_TYPE_OPUS = 6; // 0x6
      field @Deprecated public static final int SOURCE_CODEC_TYPE_SBC = 0; // 0x0
    }
+@@ -508,6 +510,7 @@ package android.bluetooth {
+     field public static final long CODEC_ID_APTX = 16797695L; // 0x1004fffL
+     field public static final long CODEC_ID_APTX_HD = 604035071L; // 0x2400d7ffL
+     field public static final long CODEC_ID_LDAC = -1442763265L; // 0xffffffffaa012dffL
++    field @FlaggedApi("com.android.bluetooth.flags.a2dp_lhdc_api") public static final long CODEC_ID_LHDCV3 = 327273495295L; // 0x4c33053affL
+     field @FlaggedApi("com.android.bluetooth.flags.a2dp_lhdc_api") public static final long CODEC_ID_LHDCV5 = 327307049727L; // 0x4c35053affL
+     field public static final long CODEC_ID_OPUS = 16834815L; // 0x100e0ffL
+     field public static final long CODEC_ID_SBC = 0L; // 0x0L
 diff --git a/framework/api/lint-baseline.txt b/framework/api/lint-baseline.txt
-index 5e5e511354..0b00260904 100644
+index 5e5e511354..d632f619f6 100644
 --- a/framework/api/lint-baseline.txt
 +++ b/framework/api/lint-baseline.txt
 @@ -29,3 +29,8 @@ BroadcastBehavior: android.bluetooth.BluetoothDevice#ACTION_PAIRING_REQUEST:
@@ -238,25 +247,24 @@ index 5e5e511354..0b00260904 100644
 +    Field BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3: @Deprecated annotation (present) and @deprecated doc tag (not present) do not match
 +DeprecationMismatch: android.bluetooth.BluetoothCodecConfig#SOURCE_CODEC_TYPE_LHDCV5:
 +    Field BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5: @Deprecated annotation (present) and @deprecated doc tag (not present) do not match
+\ No newline at end of file
 diff --git a/framework/api/module-lib-lint-baseline.txt b/framework/api/module-lib-lint-baseline.txt
-index d8f82447aa..b842a496ff 100644
+index d8f82447aa..8ff54f1070 100644
 --- a/framework/api/module-lib-lint-baseline.txt
 +++ b/framework/api/module-lib-lint-baseline.txt
-@@ -45,6 +45,12 @@ BroadcastBehavior: android.bluetooth.BluetoothDevice#ACTION_UUID:
+@@ -44,6 +44,10 @@ BroadcastBehavior: android.bluetooth.BluetoothDevice#ACTION_SWITCH_BUFFER_SIZE:
+ BroadcastBehavior: android.bluetooth.BluetoothDevice#ACTION_UUID:
      Field 'ACTION_UUID' is missing @BroadcastBehavior
- 
  
 +DeprecationMismatch: android.bluetooth.BluetoothCodecConfig#SOURCE_CODEC_TYPE_LHDCV3:
 +    Field BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3: @Deprecated annotation (present) and @deprecated doc tag (not present) do not match
 +DeprecationMismatch: android.bluetooth.BluetoothCodecConfig#SOURCE_CODEC_TYPE_LHDCV5:
 +    Field BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5: @Deprecated annotation (present) and @deprecated doc tag (not present) do not match
-+
-+
+ 
  RequiresPermission: android.bluetooth.BluetoothA2dp#setCodecConfigPreference(android.bluetooth.BluetoothDevice, android.bluetooth.BluetoothCodecConfig):
      Method 'setCodecConfigPreference' documentation mentions permissions already declared by @RequiresPermission
- RequiresPermission: android.bluetooth.BluetoothAdapter#getAddress():
 diff --git a/framework/api/system-lint-baseline.txt b/framework/api/system-lint-baseline.txt
-index 0fe01325a8..224f16f520 100644
+index 0fe01325a8..190dd481b8 100644
 --- a/framework/api/system-lint-baseline.txt
 +++ b/framework/api/system-lint-baseline.txt
 @@ -43,3 +43,8 @@ BroadcastBehavior: android.bluetooth.BluetoothDevice#ACTION_SWITCH_BUFFER_SIZE:
@@ -268,8 +276,9 @@ index 0fe01325a8..224f16f520 100644
 +    Field BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV3: @Deprecated annotation (present) and @deprecated doc tag (not present) do not match
 +DeprecationMismatch: android.bluetooth.BluetoothCodecConfig#SOURCE_CODEC_TYPE_LHDCV5:
 +    Field BluetoothCodecConfig.SOURCE_CODEC_TYPE_LHDCV5: @Deprecated annotation (present) and @deprecated doc tag (not present) do not match
+\ No newline at end of file
 diff --git a/framework/java/android/bluetooth/BluetoothCodecConfig.java b/framework/java/android/bluetooth/BluetoothCodecConfig.java
-index 8e9ed78ef1..8e7d7c3162 100644
+index 4e3a909b55..7cd6e7414d 100644
 --- a/framework/java/android/bluetooth/BluetoothCodecConfig.java
 +++ b/framework/java/android/bluetooth/BluetoothCodecConfig.java
 @@ -52,6 +52,9 @@ public final class BluetoothCodecConfig implements Parcelable {
@@ -366,31 +375,23 @@ index 8e9ed78ef1..8e7d7c3162 100644
                  return true;
          }
 diff --git a/framework/java/android/bluetooth/BluetoothCodecType.java b/framework/java/android/bluetooth/BluetoothCodecType.java
-index bcac9c5c41..2da73ed81a 100644
+index 6bd5045c56..aa6996681d 100644
 --- a/framework/java/android/bluetooth/BluetoothCodecType.java
 +++ b/framework/java/android/bluetooth/BluetoothCodecType.java
-@@ -59,6 +59,20 @@ public final class BluetoothCodecType implements Parcelable {
-     /** LDAC codec identifier. See {@link BluetoothCodecType#getCodecId}. */
-     public static final long CODEC_ID_LDAC = 0x00aa012dff;
+@@ -65,7 +65,11 @@ public final class BluetoothCodecType implements Parcelable {
  
-+    /**
-+     * LHDCV3 codec identifier
-+     *
-+     * @hide
-+     */
-+    public static final long CODEC_ID_LHDCV3 = 0x334c3a05fL;
+     /** LHDC codec identifier. See {@link BluetoothCodecType#getCodecId}. */
+     @FlaggedApi(Flags.FLAG_A2DP_LHDC_API)
+-    public static final long CODEC_ID_LHDCV5 = 0x4c35_053a_ffL;
++    public static final long CODEC_ID_LHDCV3 = 0x4c33053affL;
 +
-+    /**
-+     * LHDCV5 codec identifier
-+     *
-+     * @hide
-+     */
-+    public static final long CODEC_ID_LHDCV5 = 0x354c3a05ffL;
-+
-     /** Opus codec identifier. See {@link BluetoothCodecType#getCodecId}. */
-     public static final long CODEC_ID_OPUS = 0x000100e0ff;
++    /** LHDC codec identifier. See {@link BluetoothCodecType#getCodecId}. */
++    @FlaggedApi(Flags.FLAG_A2DP_LHDC_API)
++    public static final long CODEC_ID_LHDCV5 = 0x4c35053affL;
  
-@@ -186,6 +200,8 @@ public final class BluetoothCodecType implements Parcelable {
+     /**
+      * Create the bluetooth codec type from the static codec type index.
+@@ -191,6 +195,8 @@ public final class BluetoothCodecType implements Parcelable {
                      case BluetoothCodecConfig.SOURCE_CODEC_TYPE_APTX -> CODEC_ID_APTX;
                      case BluetoothCodecConfig.SOURCE_CODEC_TYPE_APTX_HD -> CODEC_ID_APTX_HD;
                      case BluetoothCodecConfig.SOURCE_CODEC_TYPE_LDAC -> CODEC_ID_LDAC;
@@ -399,11 +400,11 @@ index bcac9c5c41..2da73ed81a 100644
                      case BluetoothCodecConfig.SOURCE_CODEC_TYPE_OPUS -> CODEC_ID_OPUS;
                      case BluetoothCodecConfig.SOURCE_CODEC_TYPE_LC3,
                                      BluetoothCodecConfig.SOURCE_CODEC_TYPE_INVALID ->
-diff --git a/system/audio_hal_interface/aidl/a2dp_encoding_aidl.cc b/system/audio_hal_interface/aidl/a2dp_encoding_aidl.cc
-index 6e715c4a75..b52ddcd00a 100644
---- a/system/audio_hal_interface/aidl/a2dp_encoding_aidl.cc
-+++ b/system/audio_hal_interface/aidl/a2dp_encoding_aidl.cc
-@@ -294,6 +294,12 @@ bool a2dp_get_selected_hal_codec_config(A2dpCodecConfig* a2dp_config, uint16_t p
+diff --git a/system/audio_hal_interface/aidl/a2dp/a2dp_encoding_aidl.cc b/system/audio_hal_interface/aidl/a2dp/a2dp_encoding_aidl.cc
+index 6b8a2b4195..790143cb68 100644
+--- a/system/audio_hal_interface/aidl/a2dp/a2dp_encoding_aidl.cc
++++ b/system/audio_hal_interface/aidl/a2dp/a2dp_encoding_aidl.cc
+@@ -283,6 +283,12 @@ bool a2dp_get_selected_hal_codec_config(A2dpCodecConfig* a2dp_config, uint16_t p
        }
        break;
      }
@@ -416,10 +417,10 @@ index 6e715c4a75..b52ddcd00a 100644
      case BTAV_A2DP_CODEC_INDEX_MAX:
        [[fallthrough]];
      default:
-diff --git a/system/audio_hal_interface/aidl/codec_status_aidl.cc b/system/audio_hal_interface/aidl/codec_status_aidl.cc
-index 9f5fc95dab..d65535427c 100644
---- a/system/audio_hal_interface/aidl/codec_status_aidl.cc
-+++ b/system/audio_hal_interface/aidl/codec_status_aidl.cc
+diff --git a/system/audio_hal_interface/aidl/a2dp/codec_status_aidl.cc b/system/audio_hal_interface/aidl/a2dp/codec_status_aidl.cc
+index cb4a601f0a..307439235e 100644
+--- a/system/audio_hal_interface/aidl/a2dp/codec_status_aidl.cc
++++ b/system/audio_hal_interface/aidl/a2dp/codec_status_aidl.cc
 @@ -28,6 +28,7 @@
  #include "a2dp_vendor_aptx_constants.h"
  #include "a2dp_vendor_aptx_hd_constants.h"
@@ -429,24 +430,22 @@ index 9f5fc95dab..d65535427c 100644
  #include "client_interface_aidl.h"
  
 diff --git a/system/btif/co/bta_av_co.cc b/system/btif/co/bta_av_co.cc
-index 75f42cb1d3..f5f94170ff 100644
+index d589607124..63c2c89fcf 100644
 --- a/system/btif/co/bta_av_co.cc
 +++ b/system/btif/co/bta_av_co.cc
-@@ -249,7 +249,12 @@ tA2DP_STATUS BtaAvCo::ProcessSourceGetConfig(tBTA_AV_HNDL bta_av_handle,
+@@ -255,7 +255,10 @@ tA2DP_STATUS BtaAvCo::ProcessSourceGetConfig(tBTA_AV_HNDL bta_av_handle,
    // Select the Source codec
    const BtaAvCoSep* p_sink = nullptr;
    if (p_peer->acceptor) {
 -    UpdateAllSelectableSourceCodecs(p_peer);
-+
 +    // Savitech Patch - START
 +    //UpdateAllSelectableSourceCodecs(p_peer);
 +    size_t updated_codecs = UpdateAllSelectableSourceCodecs(p_peer);
 +    // Savitech Patch - END
-+
      if (p_peer->p_sink == nullptr) {
        // Update the selected codec
        p_peer->p_sink = peer_cache_->FindPeerSink(
-@@ -260,6 +265,14 @@ tA2DP_STATUS BtaAvCo::ProcessSourceGetConfig(tBTA_AV_HNDL bta_av_handle,
+@@ -266,6 +269,14 @@ tA2DP_STATUS BtaAvCo::ProcessSourceGetConfig(tBTA_AV_HNDL bta_av_handle,
        log::error("cannot find the selected codec for peer {}", p_peer->addr);
        return A2DP_FAIL;
      }
@@ -461,7 +460,7 @@ index 75f42cb1d3..f5f94170ff 100644
    } else {
      if (btif_av_peer_prefers_mandatory_codec(p_peer->addr, A2dpType::kSource)) {
        // Apply user preferred codec directly before first codec selected.
-@@ -1418,7 +1431,9 @@ static bool bta_av_co_should_select_hardware_codec(
+@@ -1424,7 +1435,9 @@ static bool bta_av_co_should_select_hardware_codec(
    // Prioritize LDAC, AptX HD and AptX over AAC and SBC offload codecs
    if (software_codec_index == BTAV_A2DP_CODEC_INDEX_SOURCE_LDAC ||
        software_codec_index == BTAV_A2DP_CODEC_INDEX_SOURCE_APTX_HD ||
@@ -473,13 +472,13 @@ index 75f42cb1d3..f5f94170ff 100644
      return false;
    }
 diff --git a/system/btif/src/btif_a2dp_source.cc b/system/btif/src/btif_a2dp_source.cc
-index f67527da8b..9ee80f49bb 100644
+index a7ba4fa0dc..d2a06dc49a 100644
 --- a/system/btif/src/btif_a2dp_source.cc
 +++ b/system/btif/src/btif_a2dp_source.cc
-@@ -874,7 +874,24 @@ static void btif_a2dp_source_audio_handle_timer(void) {
- }
+@@ -962,7 +962,24 @@ static uint32_t btif_a2dp_source_read_callback(uint8_t* p_buf, uint32_t len) {
+     return 0;
+   }
  
- static uint32_t btif_a2dp_source_read_callback(uint8_t* p_buf, uint32_t len) {
 -  uint32_t bytes_read = bluetooth::audio::a2dp::read(p_buf, len);
 +  uint32_t bytes_read = 0;
 +  uint32_t bytes_offset = 0;
@@ -500,13 +499,13 @@ index f67527da8b..9ee80f49bb 100644
 +    usleep(1000);
 +  }
  
-   if (btif_a2dp_source_cb.sw_audio_is_encoding && bytes_read < len) {
+   if (bytes_read < len) {
      log::warn("UNDERFLOW: ONLY READ {} BYTES OUT OF {}", bytes_read, len);
 diff --git a/system/include/hardware/bt_av.h b/system/include/hardware/bt_av.h
-index befbfb4530..fb1ddeeb52 100644
+index b839cb048f..1f71370822 100644
 --- a/system/include/hardware/bt_av.h
 +++ b/system/include/hardware/bt_av.h
-@@ -59,6 +59,8 @@ typedef enum {
+@@ -61,6 +61,8 @@ typedef enum {
    BTAV_A2DP_CODEC_INDEX_SOURCE_LDAC,
    BTAV_A2DP_CODEC_INDEX_SOURCE_LC3,
    BTAV_A2DP_CODEC_INDEX_SOURCE_OPUS,
@@ -515,17 +514,16 @@ index befbfb4530..fb1ddeeb52 100644
  
    BTAV_A2DP_CODEC_INDEX_SOURCE_MAX,
  
-@@ -75,7 +77,8 @@ typedef enum {
+@@ -77,6 +79,8 @@ typedef enum {
    BTAV_A2DP_CODEC_INDEX_SINK_AAC,
    BTAV_A2DP_CODEC_INDEX_SINK_LDAC,
    BTAV_A2DP_CODEC_INDEX_SINK_OPUS,
--
 +  BTAV_A2DP_CODEC_INDEX_SINK_LHDCV3,
 +  BTAV_A2DP_CODEC_INDEX_SINK_LHDCV5,
+ 
    BTAV_A2DP_CODEC_INDEX_SINK_MAX,
  
-   // Range of codec indexes reserved for Offload codec extensibility.
-@@ -178,12 +181,24 @@ struct btav_a2dp_codec_config_t {
+@@ -180,12 +184,24 @@ struct btav_a2dp_codec_config_t {
          return "aptX HD";
        case BTAV_A2DP_CODEC_INDEX_SOURCE_LDAC:
          return "LDAC";
@@ -551,10 +549,10 @@ index befbfb4530..fb1ddeeb52 100644
          return "LC3";
        case BTAV_A2DP_CODEC_INDEX_SINK_OPUS:
 diff --git a/system/internal_include/bt_target.h b/system/internal_include/bt_target.h
-index 24e1cb32e0..0fa2133ccd 100644
+index edb4eb712e..bd4af70d24 100644
 --- a/system/internal_include/bt_target.h
 +++ b/system/internal_include/bt_target.h
-@@ -520,7 +520,8 @@
+@@ -518,7 +518,8 @@
  
  /* Number of simultaneous stream endpoints. */
  #ifndef AVDT_NUM_SEPS
@@ -565,10 +563,10 @@ index 24e1cb32e0..0fa2133ccd 100644
  
  /* Number of transport channels setup by AVDT for all media streams */
 diff --git a/system/stack/Android.bp b/system/stack/Android.bp
-index 817c94ee16..6b91c5d707 100644
+index fd805893b7..f7e5aa870e 100644
 --- a/system/stack/Android.bp
 +++ b/system/stack/Android.bp
-@@ -66,6 +66,8 @@ cc_library_static {
+@@ -64,6 +64,8 @@ cc_library_static {
          "external/libldac/abr/inc",
          "external/libldac/inc",
          "external/libopus/include",
@@ -577,7 +575,7 @@ index 817c94ee16..6b91c5d707 100644
          "packages/modules/Bluetooth/system",
          "packages/modules/Bluetooth/system/bta/include",
          "packages/modules/Bluetooth/system/bta/sys",
-@@ -100,6 +102,13 @@ cc_library_static {
+@@ -94,6 +96,13 @@ cc_library_static {
          "a2dp/a2dp_vendor_opus.cc",
          "a2dp/a2dp_vendor_opus_decoder.cc",
          "a2dp/a2dp_vendor_opus_encoder.cc",
@@ -592,10 +590,10 @@ index 817c94ee16..6b91c5d707 100644
          "avct/avct_bcb_act.cc",
          "avct/avct_ccb.cc",
 diff --git a/system/stack/a2dp/a2dp_codec_config.cc b/system/stack/a2dp/a2dp_codec_config.cc
-index 2a59138d7e..42554f2ce6 100644
+index 9155dabf52..ddac2d8451 100644
 --- a/system/stack/a2dp/a2dp_codec_config.cc
 +++ b/system/stack/a2dp/a2dp_codec_config.cc
-@@ -33,6 +33,9 @@
+@@ -52,6 +52,9 @@
  #include "a2dp_vendor_aptx_hd.h"
  #include "a2dp_vendor_ldac.h"
  #include "a2dp_vendor_opus.h"
@@ -605,7 +603,7 @@ index 2a59138d7e..42554f2ce6 100644
  #endif
  
  #include "audio_hal_interface/a2dp_encoding.h"
-@@ -147,6 +150,20 @@ A2dpCodecConfig* A2dpCodecConfig::createCodec(btav_a2dp_codec_index_t codec_inde
+@@ -201,6 +204,20 @@ A2dpCodecConfig* A2dpCodecConfig::createCodec(btav_a2dp_codec_index_t codec_inde
      case BTAV_A2DP_CODEC_INDEX_SINK_OPUS:
        codec_config = new A2dpCodecConfigOpusSink(codec_priority);
        break;
@@ -626,7 +624,7 @@ index 2a59138d7e..42554f2ce6 100644
  #endif
      case BTAV_A2DP_CODEC_INDEX_MAX:
      default:
-@@ -365,7 +382,11 @@ tA2DP_STATUS A2dpCodecConfig::setCodecUserConfig(
+@@ -419,7 +436,11 @@ tA2DP_STATUS A2dpCodecConfig::setCodecUserConfig(
    btav_a2dp_codec_config_t new_codec_config = getCodecConfig();
    if ((saved_codec_config.sample_rate != new_codec_config.sample_rate) ||
        (saved_codec_config.bits_per_sample != new_codec_config.bits_per_sample) ||
@@ -639,25 +637,82 @@ index 2a59138d7e..42554f2ce6 100644
      *p_restart_input = true;
    }
  
+@@ -1294,6 +1315,10 @@ bool A2DP_CodecEquals(const uint8_t* p_codec_info_a, const uint8_t* p_codec_info
+       return A2DP_VendorCodecEqualsLdac(p_codec_info_a, p_codec_info_b);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorCodecEqualsOpus(p_codec_info_a, p_codec_info_b);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorCodecEqualsLhdcV3(p_codec_info_a, p_codec_info_b);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorCodecEqualsLhdcV5(p_codec_info_a, p_codec_info_b);
+ #endif
+     default:
+       break;
+@@ -1324,6 +1349,10 @@ int A2DP_GetTrackSampleRate(const uint8_t* p_codec_info) {
+       return A2DP_VendorGetTrackSampleRateLdac(p_codec_info);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorGetTrackSampleRateOpus(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorGetTrackSampleRateLhdcV3(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorGetTrackSampleRateLhdcV5(p_codec_info);
+ #endif
+     default:
+       break;
+@@ -1354,6 +1383,10 @@ int A2DP_GetTrackBitsPerSample(const uint8_t* p_codec_info) {
+       return A2DP_VendorGetTrackBitsPerSampleLdac(p_codec_info);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorGetTrackBitsPerSampleOpus(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorGetTrackBitsPerSampleLhdcV3(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorGetTrackBitsPerSampleLhdcV5(p_codec_info);
+ #endif
+     default:
+       break;
+@@ -1384,6 +1417,10 @@ int A2DP_GetTrackChannelCount(const uint8_t* p_codec_info) {
+       return A2DP_VendorGetTrackChannelCountLdac(p_codec_info);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorGetTrackChannelCountOpus(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorGetTrackChannelCountLhdcV3(p_codec_info);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorGetTrackChannelCountLhdcV5(p_codec_info);
+ #endif
+     default:
+       break;
+@@ -1435,6 +1472,10 @@ bool A2DP_GetPacketTimestamp(const uint8_t* p_codec_info, const uint8_t* p_data,
+       return A2DP_VendorGetPacketTimestampLdac(p_codec_info, p_data, p_timestamp);
+     case bluetooth::a2dp::CodecId::OPUS:
+       return A2DP_VendorGetPacketTimestampOpus(p_codec_info, p_data, p_timestamp);
++    case bluetooth::a2dp::CodecId::LHDCV3:
++      return A2DP_VendorGetPacketTimestampLhdcV3(p_codec_info, p_data, p_timestamp);
++    case bluetooth::a2dp::CodecId::LHDCV5:
++      return A2DP_VendorGetPacketTimestampLhdcV5(p_codec_info, p_data, p_timestamp);
+ #endif
+     default:
+       break;
 diff --git a/system/stack/a2dp/a2dp_vendor.cc b/system/stack/a2dp/a2dp_vendor.cc
-index 84979bbff0..f0360d1e44 100644
+index 28a27c7cb6..d82d51912c 100644
 --- a/system/stack/a2dp/a2dp_vendor.cc
 +++ b/system/stack/a2dp/a2dp_vendor.cc
-@@ -22,13 +22,21 @@
+@@ -22,6 +22,7 @@
  
  #include "a2dp_vendor.h"
  
 +#include <bluetooth/log.h>
-+#include <string.h>
-+
- #include "a2dp_vendor_aptx.h"
- #include "a2dp_vendor_aptx_hd.h"
- #include "a2dp_vendor_ldac.h"
+ #include <cstddef>
+ #include <cstdint>
+ #include <string>
+@@ -36,10 +37,15 @@
+ #include "a2dp_vendor_ldac_constants.h"
  #include "a2dp_vendor_opus.h"
+ #include "a2dp_vendor_opus_constants.h"
 +#include "a2dp_vendor_lhdcv3.h"
 +#include "a2dp_vendor_lhdcv3_dec.h"
 +#include "a2dp_vendor_lhdcv5.h"
- #include "internal_include/bt_trace.h"
+ #include "avdt_api.h"
+ #include "hardware/bt_av.h"
  #include "stack/include/bt_hdr.h"
  
 +using namespace bluetooth;
@@ -665,7 +720,7 @@ index 84979bbff0..f0360d1e44 100644
  bool A2DP_IsVendorSourceCodecValid(const uint8_t* p_codec_info) {
    uint32_t vendor_id = A2DP_VendorCodecGetVendorId(p_codec_info);
    uint16_t codec_id = A2DP_VendorCodecGetCodecId(p_codec_info);
-@@ -55,6 +63,16 @@ bool A2DP_IsVendorSourceCodecValid(const uint8_t* p_codec_info) {
+@@ -66,6 +72,16 @@ bool A2DP_IsVendorSourceCodecValid(const uint8_t* p_codec_info) {
      return A2DP_IsCodecValidOpus(p_codec_info);
    }
  
@@ -682,7 +737,7 @@ index 84979bbff0..f0360d1e44 100644
    // Add checks based on <vendor_id, codec_id>
  
    return false;
-@@ -77,6 +95,15 @@ bool A2DP_IsVendorPeerSourceCodecValid(const uint8_t* p_codec_info) {
+@@ -88,6 +104,15 @@ bool A2DP_IsVendorPeerSourceCodecValid(const uint8_t* p_codec_info) {
      return A2DP_IsCodecValidOpus(p_codec_info);
    }
  
@@ -698,7 +753,7 @@ index 84979bbff0..f0360d1e44 100644
    return false;
  }
  
-@@ -106,6 +133,16 @@ bool A2DP_IsVendorPeerSinkCodecValid(const uint8_t* p_codec_info) {
+@@ -117,6 +142,16 @@ bool A2DP_IsVendorPeerSinkCodecValid(const uint8_t* p_codec_info) {
      return A2DP_IsCodecValidOpus(p_codec_info);
    }
  
@@ -715,24 +770,24 @@ index 84979bbff0..f0360d1e44 100644
    // Add checks based on <vendor_id, codec_id>
  
    return false;
-@@ -128,6 +165,16 @@ tA2DP_STATUS A2DP_IsVendorSinkCodecSupported(const uint8_t* p_codec_info) {
+@@ -139,6 +174,16 @@ tA2DP_STATUS A2DP_IsVendorSinkCodecSupported(const uint8_t* p_codec_info) {
      return A2DP_IsVendorSinkCodecSupportedOpus(p_codec_info);
    }
  
 +  // Check for Savitech LHDCV3 Sink
-+  else if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV3_CODEC_ID) {
++  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV3_CODEC_ID) {
 +    return A2DP_IsVendorSinkCodecSupportedLhdcV3(p_codec_info);
 +  }
 +
 +  // Check for Savitech LHDCV5 Sink
-+  else if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
++  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
 +    return A2DP_IsVendorSinkCodecSupportedLhdcV5(p_codec_info);
 +  }
 +
    return A2DP_NOT_SUPPORTED_CODEC_TYPE;
  }
  
-@@ -172,6 +219,17 @@ bool A2DP_VendorUsesRtpHeader(bool content_protection_enabled, const uint8_t* p_
+@@ -166,6 +211,18 @@ bool A2DP_VendorUsesRtpHeader(bool content_protection_enabled, const uint8_t* p_
      return A2DP_VendorUsesRtpHeaderOpus(content_protection_enabled, p_codec_info);
    }
  
@@ -747,10 +802,11 @@ index 84979bbff0..f0360d1e44 100644
 +    return A2DP_VendorUsesRtpHeaderLhdcV5(content_protection_enabled,
 +                                          p_codec_info);
 +  }
++
    // Add checks based on <content_protection_enabled, vendor_id, codec_id>
  
    return true;
-@@ -201,6 +259,16 @@ const char* A2DP_VendorCodecName(const uint8_t* p_codec_info) {
+@@ -195,6 +252,16 @@ const char* A2DP_VendorCodecName(const uint8_t* p_codec_info) {
      return A2DP_VendorCodecNameOpus(p_codec_info);
    }
  
@@ -767,7 +823,7 @@ index 84979bbff0..f0360d1e44 100644
    // Add checks based on <vendor_id, codec_id>
  
    return "UNKNOWN VENDOR CODEC";
-@@ -243,6 +311,14 @@ bool A2DP_VendorCodecTypeEquals(const uint8_t* p_codec_info_a, const uint8_t* p_
+@@ -237,6 +304,15 @@ bool A2DP_VendorCodecTypeEquals(const uint8_t* p_codec_info_a, const uint8_t* p_
      return A2DP_VendorCodecTypeEqualsOpus(p_codec_info_a, p_codec_info_b);
    }
  
@@ -779,26 +835,11 @@ index 84979bbff0..f0360d1e44 100644
 +  if (vendor_id_a == A2DP_LHDC_VENDOR_ID && codec_id_a == A2DP_LHDCV5_CODEC_ID) {
 +    return A2DP_VendorCodecTypeEqualsLhdcV5(p_codec_info_a, p_codec_info_b);
 +  }
++
    // OPTIONAL: Add extra vendor-specific checks based on the
    // vendor-specific data stored in "p_codec_info_a" and "p_codec_info_b".
  
-@@ -286,6 +362,15 @@ bool A2DP_VendorCodecEquals(const uint8_t* p_codec_info_a, const uint8_t* p_code
-     return A2DP_VendorCodecEqualsOpus(p_codec_info_a, p_codec_info_b);
-   }
- 
-+  // Check for Savitech LHDCV3
-+  if (vendor_id_a == A2DP_LHDC_VENDOR_ID && codec_id_a == A2DP_LHDCV3_CODEC_ID) {
-+    return A2DP_VendorCodecEqualsLhdcV3(p_codec_info_a, p_codec_info_b);
-+  }
-+
-+  // Check for Savitech LHDCV5
-+  if (vendor_id_a == A2DP_LHDC_VENDOR_ID && codec_id_a == A2DP_LHDCV5_CODEC_ID) {
-+    return A2DP_VendorCodecEqualsLhdcV5(p_codec_info_a, p_codec_info_b);
-+  }
-   // Add extra vendor-specific checks based on the
-   // vendor-specific data stored in "p_codec_info_a" and "p_codec_info_b".
- 
-@@ -316,6 +401,16 @@ int A2DP_VendorGetBitRate(const uint8_t* p_codec_info) {
+@@ -267,6 +343,16 @@ int A2DP_VendorGetBitRate(const uint8_t* p_codec_info) {
      return A2DP_VendorGetBitRateOpus(p_codec_info);
    }
  
@@ -815,55 +856,7 @@ index 84979bbff0..f0360d1e44 100644
    // Add checks based on <vendor_id, codec_id>
  
    return -1;
-@@ -345,6 +440,15 @@ int A2DP_VendorGetTrackSampleRate(const uint8_t* p_codec_info) {
-     return A2DP_VendorGetTrackSampleRateOpus(p_codec_info);
-   }
- 
-+  // Check for Savitech LHDCV3
-+  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV3_CODEC_ID) {
-+    return A2DP_VendorGetTrackSampleRateLhdcV3(p_codec_info);
-+  }
-+
-+  // Check for Savitech LHDCV5
-+  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
-+    return A2DP_VendorGetTrackSampleRateLhdcV5(p_codec_info);
-+  }
-   // Add checks based on <vendor_id, codec_id>
- 
-   return -1;
-@@ -374,6 +478,15 @@ int A2DP_VendorGetTrackBitsPerSample(const uint8_t* p_codec_info) {
-     return A2DP_VendorGetTrackBitsPerSampleOpus(p_codec_info);
-   }
- 
-+  // Check for Savitech LHDCV3
-+  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV3_CODEC_ID) {
-+    return A2DP_VendorGetTrackBitsPerSampleLhdcV3(p_codec_info);
-+  }
-+
-+  // Check for Savitech LHDCV5
-+  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
-+    return A2DP_VendorGetTrackBitsPerSampleLhdcV5(p_codec_info);
-+  }
-   // Add checks based on <vendor_id, codec_id>
- 
-   return -1;
-@@ -403,6 +516,15 @@ int A2DP_VendorGetTrackChannelCount(const uint8_t* p_codec_info) {
-     return A2DP_VendorGetTrackChannelCountOpus(p_codec_info);
-   }
- 
-+  // Check for Savitech LHDCV3
-+  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV3_CODEC_ID) {
-+    return A2DP_VendorGetTrackChannelCountLhdcV3(p_codec_info);
-+  }
-+
-+  // Check for Savitech LHDCV5
-+  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
-+    return A2DP_VendorGetTrackChannelCountLhdcV5(p_codec_info);
-+  }
-   // Add checks based on <vendor_id, codec_id>
- 
-   return -1;
-@@ -425,6 +547,15 @@ int A2DP_VendorGetSinkTrackChannelType(const uint8_t* p_codec_info) {
+@@ -289,6 +375,16 @@ int A2DP_VendorGetSinkTrackChannelType(const uint8_t* p_codec_info) {
      return A2DP_VendorGetSinkTrackChannelTypeOpus(p_codec_info);
    }
  
@@ -876,27 +869,11 @@ index 84979bbff0..f0360d1e44 100644
 +  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
 +    return A2DP_VendorGetSinkTrackChannelTypeLhdcV5(p_codec_info);
 +  }
++
    return -1;
  }
  
-@@ -453,6 +584,16 @@ bool A2DP_VendorGetPacketTimestamp(const uint8_t* p_codec_info, const uint8_t* p
-     return A2DP_VendorGetPacketTimestampOpus(p_codec_info, p_data, p_timestamp);
-   }
- 
-+  // Check for Savitech LHDCV3
-+  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV3_CODEC_ID) {
-+    return A2DP_VendorGetPacketTimestampLhdcV3(p_codec_info, p_data, p_timestamp);
-+  }
-+
-+  // Check for Savitech LHDCV5
-+  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
-+    return A2DP_VendorGetPacketTimestampLhdcV5(p_codec_info, p_data, p_timestamp);
-+  }
-+
-   // Add checks based on <vendor_id, codec_id>
- 
-   return false;
-@@ -483,6 +624,17 @@ bool A2DP_VendorBuildCodecHeader(const uint8_t* p_codec_info, BT_HDR* p_buf,
+@@ -317,6 +413,18 @@ bool A2DP_VendorBuildCodecHeader(const uint8_t* p_codec_info, BT_HDR* p_buf,
      return A2DP_VendorBuildCodecHeaderOpus(p_codec_info, p_buf, frames_per_packet);
    }
  
@@ -911,10 +888,11 @@ index 84979bbff0..f0360d1e44 100644
 +    return A2DP_VendorBuildCodecHeaderLhdcV5(p_codec_info, p_buf,
 +                                               frames_per_packet);
 +  }
++
    // Add checks based on <vendor_id, codec_id>
  
    return false;
-@@ -512,6 +664,15 @@ const tA2DP_ENCODER_INTERFACE* A2DP_VendorGetEncoderInterface(const uint8_t* p_c
+@@ -346,6 +454,16 @@ const tA2DP_ENCODER_INTERFACE* A2DP_VendorGetEncoderInterface(const uint8_t* p_c
      return A2DP_VendorGetEncoderInterfaceOpus(p_codec_info);
    }
  
@@ -927,10 +905,11 @@ index 84979bbff0..f0360d1e44 100644
 +  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
 +    return A2DP_VendorGetEncoderInterfaceLhdcV5(p_codec_info);
 +  }
++
    // Add checks based on <vendor_id, codec_id>
  
    return NULL;
-@@ -534,6 +695,15 @@ const tA2DP_DECODER_INTERFACE* A2DP_VendorGetDecoderInterface(const uint8_t* p_c
+@@ -368,6 +486,16 @@ const tA2DP_DECODER_INTERFACE* A2DP_VendorGetDecoderInterface(const uint8_t* p_c
      return A2DP_VendorGetDecoderInterfaceOpus(p_codec_info);
    }
  
@@ -943,10 +922,11 @@ index 84979bbff0..f0360d1e44 100644
 +  if (vendor_id == A2DP_LHDC_VENDOR_ID && codec_id == A2DP_LHDCV5_CODEC_ID) {
 +    return A2DP_VendorGetDecoderInterfaceLhdcV5(p_codec_info);
 +  }
++
    return NULL;
  }
  
-@@ -561,6 +731,16 @@ bool A2DP_VendorAdjustCodec(uint8_t* p_codec_info) {
+@@ -395,6 +523,16 @@ bool A2DP_VendorAdjustCodec(uint8_t* p_codec_info) {
      return A2DP_VendorAdjustCodecOpus(p_codec_info);
    }
  
@@ -963,16 +943,15 @@ index 84979bbff0..f0360d1e44 100644
    // Add checks based on <vendor_id, codec_id>
  
    return false;
-@@ -570,6 +750,8 @@ btav_a2dp_codec_index_t A2DP_VendorSourceCodecIndex(const uint8_t* p_codec_info)
+@@ -403,6 +541,7 @@ bool A2DP_VendorAdjustCodec(uint8_t* p_codec_info) {
+ btav_a2dp_codec_index_t A2DP_VendorSourceCodecIndex(const uint8_t* p_codec_info) {
    uint32_t vendor_id = A2DP_VendorCodecGetVendorId(p_codec_info);
    uint16_t codec_id = A2DP_VendorCodecGetCodecId(p_codec_info);
- 
 +  log::error("vendor_id 0x{:x} codec_id 0x{:x}", vendor_id, codec_id);
-+
+ 
    // Check for aptX
    if (vendor_id == A2DP_APTX_VENDOR_ID && codec_id == A2DP_APTX_CODEC_ID_BLUETOOTH) {
-     return A2DP_VendorSourceCodecIndexAptx(p_codec_info);
-@@ -590,6 +772,16 @@ btav_a2dp_codec_index_t A2DP_VendorSourceCodecIndex(const uint8_t* p_codec_info)
+@@ -424,6 +563,16 @@ btav_a2dp_codec_index_t A2DP_VendorSourceCodecIndex(const uint8_t* p_codec_info)
      return A2DP_VendorSourceCodecIndexOpus(p_codec_info);
    }
  
@@ -989,7 +968,7 @@ index 84979bbff0..f0360d1e44 100644
    // Add checks based on <vendor_id, codec_id>
  
    return BTAV_A2DP_CODEC_INDEX_MAX;
-@@ -612,6 +804,16 @@ btav_a2dp_codec_index_t A2DP_VendorSinkCodecIndex(const uint8_t* p_codec_info) {
+@@ -446,6 +595,16 @@ btav_a2dp_codec_index_t A2DP_VendorSinkCodecIndex(const uint8_t* p_codec_info) {
      return A2DP_VendorSinkCodecIndexOpus(p_codec_info);
    }
  
@@ -1006,7 +985,7 @@ index 84979bbff0..f0360d1e44 100644
    return BTAV_A2DP_CODEC_INDEX_MAX;
  }
  
-@@ -637,6 +839,16 @@ const char* A2DP_VendorCodecIndexStr(btav_a2dp_codec_index_t codec_index) {
+@@ -471,6 +630,16 @@ const char* A2DP_VendorCodecIndexStr(btav_a2dp_codec_index_t codec_index) {
        return A2DP_VendorCodecIndexStrOpus();
      case BTAV_A2DP_CODEC_INDEX_SINK_OPUS:
        return A2DP_VendorCodecIndexStrOpusSink();
@@ -1023,7 +1002,7 @@ index 84979bbff0..f0360d1e44 100644
      // Add a switch statement for each vendor-specific codec
      case BTAV_A2DP_CODEC_INDEX_MAX:
        break;
-@@ -670,6 +882,16 @@ bool A2DP_VendorInitCodecConfig(btav_a2dp_codec_index_t codec_index, AvdtpSepCon
+@@ -504,6 +673,16 @@ bool A2DP_VendorInitCodecConfig(btav_a2dp_codec_index_t codec_index, AvdtpSepCon
        return A2DP_VendorInitCodecConfigOpus(p_cfg);
      case BTAV_A2DP_CODEC_INDEX_SINK_OPUS:
        return A2DP_VendorInitCodecConfigOpusSink(p_cfg);
@@ -1040,16 +1019,7 @@ index 84979bbff0..f0360d1e44 100644
      // Add a switch statement for each vendor-specific codec
      case BTAV_A2DP_CODEC_INDEX_MAX:
        break;
-@@ -677,7 +899,7 @@ bool A2DP_VendorInitCodecConfig(btav_a2dp_codec_index_t codec_index, AvdtpSepCon
-     case BTAV_A2DP_CODEC_INDEX_SINK_EXT_MIN:
-       break;
-   }
--
-+  
-   return false;
- }
- 
-@@ -705,6 +927,16 @@ std::string A2DP_VendorCodecInfoString(const uint8_t* p_codec_info) {
+@@ -539,6 +718,16 @@ std::string A2DP_VendorCodecInfoString(const uint8_t* p_codec_info) {
      return A2DP_VendorCodecInfoStringOpus(p_codec_info);
    }
  
@@ -1065,13 +1035,13 @@ index 84979bbff0..f0360d1e44 100644
 +
    // Add checks based on <vendor_id, codec_id>
  
-   return "Unsupported codec vendor_id: " + loghex(vendor_id) + " codec_id: " + loghex(codec_id);
+   return std::format("Unsupported codec vendor_id: 0x{:x} codec_id: 0x{:x}", vendor_id, codec_id);
 diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
-new file mode 100755
-index 0000000000..4db93a4c4a
+new file mode 100644
+index 0000000000..30ef5c54c7
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_lhdcv3.cc
-@@ -0,0 +1,2483 @@
+@@ -0,0 +1,2482 @@
 +/*
 + * Copyright (C) 2016 The Android Open Source Project
 + *
@@ -1112,7 +1082,6 @@ index 0000000000..4db93a4c4a
 +#include "stack/include/bt_hdr.h"
 +#include "osi/include/osi.h"
 +#include <bluetooth/log.h>
-+#include "os/log.h"
 +using namespace bluetooth;
 +
 +typedef struct {
@@ -2164,7 +2133,7 @@ index 0000000000..4db93a4c4a
 +
 +A2dpCodecConfigLhdcV3::A2dpCodecConfigLhdcV3(
 +    btav_a2dp_codec_priority_t codec_priority)
-+    : A2dpCodecConfig(BTAV_A2DP_CODEC_INDEX_SOURCE_LHDCV3, A2DP_CODEC_ID_LHDCV3,
++    : A2dpCodecConfig(BTAV_A2DP_CODEC_INDEX_SOURCE_LHDCV3, bluetooth::a2dp::CodecId::LHDCV3,
 +                      A2DP_VendorCodecIndexStrLhdcV3(),
 +                      codec_priority) {
 +  // Compute the local capability        
@@ -3556,11 +3525,11 @@ index 0000000000..4db93a4c4a
 +  return status;
 +}
 diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
-new file mode 100755
-index 0000000000..3ca0ba2d06
+new file mode 100644
+index 0000000000..2610ad3af1
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
-@@ -0,0 +1,2087 @@
+@@ -0,0 +1,2085 @@
 +/******************************************************************************
 + *
 + *  Copyright 2002-2012 Broadcom Corporation
@@ -3603,7 +3572,6 @@ index 0000000000..3ca0ba2d06
 +#include "stack/include/bt_hdr.h"
 +#include "osi/include/osi.h"
 +#include <bluetooth/log.h>
-+#include "os/log.h"
 +using namespace bluetooth;
 +
 +
@@ -5647,13 +5615,12 @@ index 0000000000..3ca0ba2d06
 +  return false;
 +}
 +
-+
 diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
-new file mode 100755
-index 0000000000..e51c7b417e
+new file mode 100644
+index 0000000000..992d5b8d6f
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
-@@ -0,0 +1,554 @@
+@@ -0,0 +1,553 @@
 +/*
 + * Copyright (C) 2016 The Android Open Source Project
 + *
@@ -5686,7 +5653,6 @@ index 0000000000..e51c7b417e
 +#include "stack/include/bt_hdr.h"
 +#include "osi/include/osi.h"
 +#include <bluetooth/log.h>
-+#include "os/log.h"
 +using namespace bluetooth;
 +
 +
@@ -6208,9 +6174,10 @@ index 0000000000..e51c7b417e
 +    return;
 +  }
 +}
+\ No newline at end of file
 diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
-new file mode 100755
-index 0000000000..920e32046f
+new file mode 100644
+index 0000000000..7cfef04604
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_lhdcv3_encoder.cc
 @@ -0,0 +1,1054 @@
@@ -6253,7 +6220,7 @@ index 0000000000..920e32046f
 +#include "stack/include/bt_hdr.h"
 +#include "osi/include/osi.h"
 +#include <bluetooth/log.h>
-+#include "os/log.h"
++
 +using namespace bluetooth;
 +
 +//
@@ -6348,10 +6315,10 @@ index 0000000000..920e32046f
 +#endif
 +
 +
-+namespace fmt {
++namespace std {
 +template <>
 +struct formatter<LHDCBT_SMPL_FMT_T> : enum_formatter<LHDCBT_SMPL_FMT_T> {};
-+}  // namespace fmt
++}  // namespace std
 +
 +
 +//#define A2DP_LHDC_OFFSET (AVDT_MEDIA_OFFSET + 0)
@@ -7268,12 +7235,13 @@ index 0000000000..920e32046f
 +  }
 +  */
 +}
+\ No newline at end of file
 diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
-new file mode 100755
-index 0000000000..340755130b
+new file mode 100644
+index 0000000000..54a599e896
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_lhdcv5.cc
-@@ -0,0 +1,3149 @@
+@@ -0,0 +1,3148 @@
 +/*
 + * Copyright (C) 2016 The Android Open Source Project
 + *
@@ -7312,7 +7280,6 @@ index 0000000000..340755130b
 +#include "btif/include/btif_av_co.h"
 +#include "internal_include/bt_trace.h"
 +
-+#include "os/log.h"
 +#include "osi/include/osi.h"
 +#include "stack/include/bt_hdr.h"
 +
@@ -10423,12 +10390,13 @@ index 0000000000..340755130b
 +////////
 +//    APIs for calling from encoder/decoder module - END
 +////////
+\ No newline at end of file
 diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
-new file mode 100755
-index 0000000000..dc15a4ac7f
+new file mode 100644
+index 0000000000..1256f0f983
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_lhdcv5_decoder.cc
-@@ -0,0 +1,617 @@
+@@ -0,0 +1,616 @@
 +/*
 + * Copyright (C) 2022 The Android Open Source Project
 + *
@@ -10463,7 +10431,6 @@ index 0000000000..dc15a4ac7f
 +#include "stack/include/bt_hdr.h"
 +#include "osi/include/osi.h"
 +#include <bluetooth/log.h>
-+#include "os/log.h"
 +using namespace bluetooth;
 +
 +
@@ -11046,12 +11013,13 @@ index 0000000000..dc15a4ac7f
 +  log::info("");
 +  //pthread_mutex_unlock(&(a2dp_lhdcv5_decoder_cb.mutex));
 +}
+\ No newline at end of file
 diff --git a/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
-new file mode 100755
-index 0000000000..386738717e
+new file mode 100644
+index 0000000000..601339e260
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_lhdcv5_encoder.cc
-@@ -0,0 +1,1309 @@
+@@ -0,0 +1,1307 @@
 +/*
 + * Copyright (C) 2016 The Android Open Source Project
 + *
@@ -11092,7 +11060,6 @@ index 0000000000..386738717e
 +#include "stack/include/bt_hdr.h"
 +#include "osi/include/osi.h"
 +#include <bluetooth/log.h>
-+#include "os/log.h"
 +using namespace bluetooth;
 +
 +
@@ -12360,23 +12327,37 @@ index 0000000000..386738717e
 +      "  LHDC saved transmit queue length                        : %zu\n",
 +      (size_t)a2dp_lhdc_encoder_cb.TxQueueLength);
 +}
-+
 diff --git a/system/stack/include/a2dp_constants.h b/system/stack/include/a2dp_constants.h
-index 3bb957a5e7..b789aa1806 100644
+index e766fff768..fe2651c146 100644
 --- a/system/stack/include/a2dp_constants.h
 +++ b/system/stack/include/a2dp_constants.h
-@@ -59,6 +59,8 @@ enum tA2DP_CODEC_ID : uint64_t {
-   A2DP_CODEC_ID_APTX = 0x0001004fff,
-   A2DP_CODEC_ID_APTX_HD = 0x002400d7ff,
-   A2DP_CODEC_ID_LDAC = 0x00aa012dff,
-+  A2DP_CODEC_ID_LHDCV3 = 0x334c3a05ff,
-+  A2DP_CODEC_ID_LHDCV5 = 0x354c3a05ff,
-   A2DP_CODEC_ID_OPUS = 0x000100e0ff,
+@@ -56,11 +56,14 @@ static constexpr uint16_t kAptxCompanyId = 0x004F;
+ static constexpr uint16_t kAptxHdCompanyId = 0x00D7;
+ static constexpr uint16_t kLdacCompanyId = 0x012D;
+ static constexpr uint16_t kOpusCompanyId = 0x00E0;
++static constexpr uint16_t kLhdcCompanyId = 0x053A;
+ 
+ static constexpr uint16_t kAptxCodecId = 0x0001;
+ static constexpr uint16_t kAptxHdCodecId = 0x0024;
+ static constexpr uint16_t kLdacCodecId = 0x00AA;
+ static constexpr uint16_t kOpusCodecId = 0x0001;
++static constexpr uint16_t kLhdcV3CodecId = 0x4C33;
++static constexpr uint16_t kLhdcV5CodecId = 0x4C35;
+ 
+ /// Standardized codec identifiers.
+ ///
+@@ -86,6 +89,8 @@ enum class CodecId : uint64_t {
+   APTX_HD = VendorCodecId(kAptxHdCompanyId, kAptxHdCodecId),
+   LDAC = VendorCodecId(kLdacCompanyId, kLdacCodecId),
+   OPUS = VendorCodecId(kOpusCompanyId, kOpusCodecId),
++  LHDCV3 = VendorCodecId(kLhdcCompanyId, kLhdcV3CodecId),
++  LHDCV5 = VendorCodecId(kLhdcCompanyId, kLhdcV5CodecId),
  };
  
+ /// Parse the standardized codec identifier from the Media Codec Capabilities.
 diff --git a/system/stack/include/a2dp_vendor_lhdc_constants.h b/system/stack/include/a2dp_vendor_lhdc_constants.h
-new file mode 100755
-index 0000000000..486ee999e6
+new file mode 100644
+index 0000000000..3fb0f7f9b8
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdc_constants.h
 @@ -0,0 +1,308 @@
@@ -12479,7 +12460,7 @@ index 0000000000..486ee999e6
 +#define A2DP_LHDCV5_CODEC_LEN 13
 +
 +// [Octet 0-3] Vendor ID
-+#define A2DP_LHDC_VENDOR_ID 0x0000053a
++#define A2DP_LHDC_VENDOR_ID 0x0000053A
 +// [Octet 4-5] Vendor Specific Codec ID
 +#define A2DP_LHDCV2_CODEC_ID 0x4C32
 +#define A2DP_LHDCV3_CODEC_ID 0x4C33
@@ -12688,9 +12669,10 @@ index 0000000000..486ee999e6
 +#define A2DP_OFFLOAD_LHDC_CFG_META                  17
 +
 +#endif  // A2DP_VENDOR_LHDC_CONSTANTS_H
+\ No newline at end of file
 diff --git a/system/stack/include/a2dp_vendor_lhdcv3.h b/system/stack/include/a2dp_vendor_lhdcv3.h
-new file mode 100755
-index 0000000000..6cd90d01a2
+new file mode 100644
+index 0000000000..94a78c91ad
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdcv3.h
 @@ -0,0 +1,324 @@
@@ -13018,9 +13000,10 @@ index 0000000000..6cd90d01a2
 +int A2DP_VendorGetBitRateLhdcV3(const uint8_t* p_codec_info);
 +
 +#endif  // A2DP_VENDOR_LHDCV3_H
+\ No newline at end of file
 diff --git a/system/stack/include/a2dp_vendor_lhdcv3_dec.h b/system/stack/include/a2dp_vendor_lhdcv3_dec.h
-new file mode 100755
-index 0000000000..adec89261d
+new file mode 100644
+index 0000000000..20e83df5e9
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdcv3_dec.h
 @@ -0,0 +1,192 @@
@@ -13060,7 +13043,7 @@ index 0000000000..adec89261d
 +                         const std::string& name,
 +                         btav_a2dp_codec_priority_t codec_priority,
 +                         bool is_source)
-+      : A2dpCodecConfig(codec_index, A2DP_CODEC_ID_LHDCV3, name, codec_priority),
++      : A2dpCodecConfig(codec_index, bluetooth::a2dp::CodecId::LHDCV3, name, codec_priority),
 +        is_source_(is_source) {}
 +  tA2DP_STATUS setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
 +                      uint8_t* p_result_codec_config) override;
@@ -13216,9 +13199,10 @@ index 0000000000..adec89261d
 +bool A2DP_VendorInitCodecConfigLhdcV3Sink(AvdtpSepConfig* p_cfg);
 +
 +#endif  // A2DP_VENDOR_LHDCV3_DEC_H
+\ No newline at end of file
 diff --git a/system/stack/include/a2dp_vendor_lhdcv3_decoder.h b/system/stack/include/a2dp_vendor_lhdcv3_decoder.h
-new file mode 100755
-index 0000000000..58b8f14370
+new file mode 100644
+index 0000000000..9f3f2a9c61
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdcv3_decoder.h
 @@ -0,0 +1,59 @@
@@ -13281,9 +13265,10 @@ index 0000000000..58b8f14370
 +void a2dp_vendor_lhdcv3_decoder_configure(const uint8_t* p_codec_info);
 +
 +#endif  // A2DP_VENDOR_LHDCV3_DECODER_H
+\ No newline at end of file
 diff --git a/system/stack/include/a2dp_vendor_lhdcv3_encoder.h b/system/stack/include/a2dp_vendor_lhdcv3_encoder.h
-new file mode 100755
-index 0000000000..68c8d924e7
+new file mode 100644
+index 0000000000..cf42f08bf9
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdcv3_encoder.h
 @@ -0,0 +1,77 @@
@@ -13364,9 +13349,10 @@ index 0000000000..68c8d924e7
 +void a2dp_vendor_lhdcv3_set_transmit_queue_length(size_t transmit_queue_length);
 +
 +#endif  // A2DP_VENDOR_LHDCV3_ENCODER_H
+\ No newline at end of file
 diff --git a/system/stack/include/a2dp_vendor_lhdcv5.h b/system/stack/include/a2dp_vendor_lhdcv5.h
-new file mode 100755
-index 0000000000..bc27d8ea91
+new file mode 100644
+index 0000000000..b8e4806029
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdcv5.h
 @@ -0,0 +1,291 @@
@@ -13410,7 +13396,7 @@ index 0000000000..bc27d8ea91
 +                         const std::string& name,
 +                         btav_a2dp_codec_priority_t codec_priority,
 +                         bool is_source)
-+      : A2dpCodecConfig(codec_index,  A2DP_CODEC_ID_LHDCV5, name, codec_priority),
++      : A2dpCodecConfig(codec_index, bluetooth::a2dp::CodecId::LHDCV5, name, codec_priority),
 +        is_source_(is_source) {}
 +  tA2DP_STATUS setCodecConfig(const uint8_t* p_peer_codec_info, bool is_capability,
 +                      uint8_t* p_result_codec_config) override;
@@ -13661,9 +13647,10 @@ index 0000000000..bc27d8ea91
 +int A2DP_VendorGetBitRateLhdcV5(const uint8_t* p_codec_info);
 +
 +#endif  // A2DP_VENDOR_LHDCV5_H
+\ No newline at end of file
 diff --git a/system/stack/include/a2dp_vendor_lhdcv5_constants.h b/system/stack/include/a2dp_vendor_lhdcv5_constants.h
-new file mode 100755
-index 0000000000..001234b0e7
+new file mode 100644
+index 0000000000..8a334472ae
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdcv5_constants.h
 @@ -0,0 +1,258 @@
@@ -13925,9 +13912,10 @@ index 0000000000..001234b0e7
 +// Savitech - LHDC Extended API End
 +//
 +#endif  // A2DP_VENDOR_LHDCV5_CONSTANTS_H
+\ No newline at end of file
 diff --git a/system/stack/include/a2dp_vendor_lhdcv5_decoder.h b/system/stack/include/a2dp_vendor_lhdcv5_decoder.h
-new file mode 100755
-index 0000000000..ba5be98257
+new file mode 100644
+index 0000000000..11c82626f0
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdcv5_decoder.h
 @@ -0,0 +1,58 @@
@@ -13989,9 +13977,10 @@ index 0000000000..ba5be98257
 +void a2dp_vendor_lhdcv5_decoder_configure(const uint8_t* p_codec_info);
 +
 +#endif  // A2DP_VENDOR_LHDCV5_DECODER_H
+\ No newline at end of file
 diff --git a/system/stack/include/a2dp_vendor_lhdcv5_encoder.h b/system/stack/include/a2dp_vendor_lhdcv5_encoder.h
-new file mode 100755
-index 0000000000..0e9dddf597
+new file mode 100644
+index 0000000000..cf44eeed04
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_lhdcv5_encoder.h
 @@ -0,0 +1,66 @@
@@ -14061,6 +14050,7 @@ index 0000000000..0e9dddf597
 +void a2dp_vendor_lhdcv5_set_transmit_queue_length(size_t transmit_queue_length);
 +
 +#endif  // A2DP_VENDOR_LHDCV5_ENCODER_H
+\ No newline at end of file
 -- 
 2.43.0
 
