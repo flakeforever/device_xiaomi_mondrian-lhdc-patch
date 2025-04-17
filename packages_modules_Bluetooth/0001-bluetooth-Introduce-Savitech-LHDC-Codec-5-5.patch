@@ -1,6 +1,6 @@
-From 725184441f1be32dae32ef4e629359a0db45d772 Mon Sep 17 00:00:00 2001
-From: jimmy chen <jimmy.chen@savitech.co>
-Date: Tue, 1 Apr 2025 06:51:14 -0700
+From 81c8b1a7ed98a758129e4d33616e906a7c29f17a Mon Sep 17 00:00:00 2001
+From: flakeforever <113103193+flakeforever@users.noreply.github.com>
+Date: Wed, 16 Apr 2025 17:52:30 -0700
 Subject: [PATCH] bluetooth: Introduce Savitech LHDC Codec [5/5]
 
 Import Savitech LHDC Codec from https://gitlab.com/savitech-lhdc/
@@ -11,7 +11,7 @@ Co-authored-by: flakeforever <113103193+flakeforever@users.noreply.github.com>
  .../bluetooth/a2dp/A2dpCodecConfig.java       |   46 +-
  .../bluetooth/a2dp/A2dpStateMachine.java      |   12 +
  apex/Android.bp                               |   28 +-
- framework/api/current.txt                     |    3 +
+ framework/api/current.txt                     |    5 +-
  framework/api/lint-baseline.txt               |    5 +
  framework/api/module-lib-lint-baseline.txt    |    4 +
  framework/api/system-lint-baseline.txt        |    5 +
@@ -43,7 +43,7 @@ Co-authored-by: flakeforever <113103193+flakeforever@users.noreply.github.com>
  .../include/a2dp_vendor_lhdcv5_constants.h    |  258 ++
  .../include/a2dp_vendor_lhdcv5_decoder.h      |   58 +
  .../include/a2dp_vendor_lhdcv5_encoder.h      |   66 +
- 36 files changed, 13331 insertions(+), 13 deletions(-)
+ 36 files changed, 13332 insertions(+), 14 deletions(-)
  create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv3.cc
  create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv3_dec.cc
  create mode 100644 system/stack/a2dp/a2dp_vendor_lhdcv3_decoder.cc
@@ -214,7 +214,7 @@ index 52b9631fb4..a6775ca92d 100644
      bootclasspath_fragments: ["com.android.btservices-bootclasspath-fragment"],
      systemserverclasspath_fragments: ["com.android.btservices-systemserverclasspath-fragment"],
 diff --git a/framework/api/current.txt b/framework/api/current.txt
-index 8ee8e08f2b..0a2471f3b5 100644
+index 8ee8e08f2b..666e224234 100644
 --- a/framework/api/current.txt
 +++ b/framework/api/current.txt
 @@ -460,6 +460,8 @@ package android.bluetooth {
@@ -226,14 +226,16 @@ index 8ee8e08f2b..0a2471f3b5 100644
      field @Deprecated public static final int SOURCE_CODEC_TYPE_OPUS = 6; // 0x6
      field @Deprecated public static final int SOURCE_CODEC_TYPE_SBC = 0; // 0x0
    }
-@@ -508,6 +510,7 @@ package android.bluetooth {
+@@ -508,7 +510,8 @@ package android.bluetooth {
      field public static final long CODEC_ID_APTX = 16797695L; // 0x1004fffL
      field public static final long CODEC_ID_APTX_HD = 604035071L; // 0x2400d7ffL
      field public static final long CODEC_ID_LDAC = -1442763265L; // 0xffffffffaa012dffL
-+    field @FlaggedApi("com.android.bluetooth.flags.a2dp_lhdc_api") public static final long CODEC_ID_LHDCV3 = 327273495295L; // 0x4c33053affL
-     field @FlaggedApi("com.android.bluetooth.flags.a2dp_lhdc_api") public static final long CODEC_ID_LHDCV5 = 327307049727L; // 0x4c35053affL
+-    field @FlaggedApi("com.android.bluetooth.flags.a2dp_lhdc_api") public static final long CODEC_ID_LHDCV5 = 327307049727L; // 0x4c35053affL
++    field @FlaggedApi("com.android.bluetooth.flags.a2dp_lhdc_api") public static final long CODEC_ID_LHDCV3 = 220322203135L; // 0x334c3a05ffL
++    field @FlaggedApi("com.android.bluetooth.flags.a2dp_lhdc_api") public static final long CODEC_ID_LHDCV5 = 228912137727L; // 0x354c3a05ffL
      field public static final long CODEC_ID_OPUS = 16834815L; // 0x100e0ffL
      field public static final long CODEC_ID_SBC = 0L; // 0x0L
+     field @NonNull public static final android.os.Parcelable.Creator<android.bluetooth.BluetoothCodecType> CREATOR;
 diff --git a/framework/api/lint-baseline.txt b/framework/api/lint-baseline.txt
 index 5e5e511354..d632f619f6 100644
 --- a/framework/api/lint-baseline.txt
@@ -375,7 +377,7 @@ index 4e3a909b55..7cd6e7414d 100644
                  return true;
          }
 diff --git a/framework/java/android/bluetooth/BluetoothCodecType.java b/framework/java/android/bluetooth/BluetoothCodecType.java
-index 6bd5045c56..aa6996681d 100644
+index 6bd5045c56..a80bd69067 100644
 --- a/framework/java/android/bluetooth/BluetoothCodecType.java
 +++ b/framework/java/android/bluetooth/BluetoothCodecType.java
 @@ -65,7 +65,11 @@ public final class BluetoothCodecType implements Parcelable {
@@ -383,11 +385,11 @@ index 6bd5045c56..aa6996681d 100644
      /** LHDC codec identifier. See {@link BluetoothCodecType#getCodecId}. */
      @FlaggedApi(Flags.FLAG_A2DP_LHDC_API)
 -    public static final long CODEC_ID_LHDCV5 = 0x4c35_053a_ffL;
-+    public static final long CODEC_ID_LHDCV3 = 0x4c33053affL;
++    public static final long CODEC_ID_LHDCV3 = 0x334c3a05ffL;
 +
 +    /** LHDC codec identifier. See {@link BluetoothCodecType#getCodecId}. */
 +    @FlaggedApi(Flags.FLAG_A2DP_LHDC_API)
-+    public static final long CODEC_ID_LHDCV5 = 0x4c35053affL;
++    public static final long CODEC_ID_LHDCV5 = 0x354c3a05ffL;
  
      /**
       * Create the bluetooth codec type from the static codec type index.
@@ -12328,21 +12330,21 @@ index 0000000000..601339e260
 +      (size_t)a2dp_lhdc_encoder_cb.TxQueueLength);
 +}
 diff --git a/system/stack/include/a2dp_constants.h b/system/stack/include/a2dp_constants.h
-index e766fff768..fe2651c146 100644
+index e766fff768..5544ed33cd 100644
 --- a/system/stack/include/a2dp_constants.h
 +++ b/system/stack/include/a2dp_constants.h
 @@ -56,11 +56,14 @@ static constexpr uint16_t kAptxCompanyId = 0x004F;
  static constexpr uint16_t kAptxHdCompanyId = 0x00D7;
  static constexpr uint16_t kLdacCompanyId = 0x012D;
  static constexpr uint16_t kOpusCompanyId = 0x00E0;
-+static constexpr uint16_t kLhdcCompanyId = 0x053A;
++// static constexpr uint16_t kLhdcCompanyId = 0x053A;
  
  static constexpr uint16_t kAptxCodecId = 0x0001;
  static constexpr uint16_t kAptxHdCodecId = 0x0024;
  static constexpr uint16_t kLdacCodecId = 0x00AA;
  static constexpr uint16_t kOpusCodecId = 0x0001;
-+static constexpr uint16_t kLhdcV3CodecId = 0x4C33;
-+static constexpr uint16_t kLhdcV5CodecId = 0x4C35;
++// static constexpr uint16_t kLhdcV3CodecId = 0x4C33;
++// static constexpr uint16_t kLhdcV5CodecId = 0x4C35;
  
  /// Standardized codec identifiers.
  ///
@@ -12350,8 +12352,8 @@ index e766fff768..fe2651c146 100644
    APTX_HD = VendorCodecId(kAptxHdCompanyId, kAptxHdCodecId),
    LDAC = VendorCodecId(kLdacCompanyId, kLdacCodecId),
    OPUS = VendorCodecId(kOpusCompanyId, kOpusCodecId),
-+  LHDCV3 = VendorCodecId(kLhdcCompanyId, kLhdcV3CodecId),
-+  LHDCV5 = VendorCodecId(kLhdcCompanyId, kLhdcV5CodecId),
++  LHDCV3 = 0x334c3a05ff, // VendorCodecId(kLhdcCompanyId, kLhdcV3CodecId),
++  LHDCV5 = 0x354c3a05ff, // VendorCodecId(kLhdcCompanyId, kLhdcV5CodecId),
  };
  
  /// Parse the standardized codec identifier from the Media Codec Capabilities.
